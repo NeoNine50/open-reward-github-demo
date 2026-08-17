@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/><title>Open Reward - Transactions</title>
+  <style>table, th, td { border: 1px solid black; border-collapse: collapse; padding: 4px; }</style>
+</head>
+<body>
+<h1>Open Reward admin</h1>
+<p>
+  <a href="users.html">Show users</a> &middot;
+  <a href="products.html">Show products</a> &middot;
+  <b><a href="transfers.html">Show transactions</a></b>
+</p>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th><th>Producer</th><th>Consumer</th><th>Product</th><th>Amount</th>
+      <th>NBR awarded</th><th>NBR removed</th><th>Created</th><th>Note</th><th>Operation</th>
+    </tr>
+  </thead>
+  <tbody id="transfer-rows"></tbody>
+</table>
+
+<script src="store.js"></script>
+<script>
+  function render() {
+    const transfers = DB.get('transfers');
+    const users = DB.get('users');
+    const products = DB.get('products');
+
+    const tbody = document.getElementById('transfer-rows');
+    tbody.innerHTML = transfers.map(t => {
+      const p = users.find(u => u.id === t.ProducerID) || { name: 'Unknown' };
+      const c = users.find(u => u.id === t.ConsumerID) || { name: 'nobody/everybody' };
+      const prod = products.find(pr => pr.id === t.ProductID) || { name: 'Unknown' };
+
+      return `<tr>
+        <td>${t.id}</td><td>${p.name}</td><td>${c.name}</td><td>${prod.name}</td>
+        <td>${t.amount}</td><td>${t.nbr}</td><td>${t.gnbr}</td><td>${t.time_created}</td>
+        <td>
+          <input type="text" value="${t.comment || ''}" id="note-${t.id}">
+          <button onclick="updateNote(${t.id})">Save edit</button>
+        </td>
+        <td><button onclick="deleteTransfer(${t.id})">Delete record</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function updateNote(id) {
+    const transfers = DB.get('transfers');
+    const item = transfers.find(t => t.id === id);
+    if (item) {
+      item.comment = document.getElementById(`note-${id}`).value;
+      DB.set('transfers', transfers);
+      alert('Note updated successfully.');
+    }
+  }
+
+  function deleteTransfer(id) {
+    let transfers = DB.get('transfers');
+    const users = DB.get('users');
+    const t = transfers.find(x => x.id === id);
+
+    if (t) {
+      // Revert user NBR/Fame values
+      const producer = users.find(u => u.id === t.ProducerID);
+      if (producer) {
+        producer.nbr = Math.max(0, producer.nbr - t.nbr);
+        producer.fame = Math.max(0, producer.fame - t.nbr);
+      }
+      const consumer = users.find(u => u.id === t.ConsumerID);
+      if (consumer && t.ConsumerID !== 0) {
+        consumer.nbr += t.gnbr;
+      }
+
+      transfers = transfers.filter(x => x.id !== id);
+      DB.set('users', users);
+      DB.set('transfers', transfers);
+      render();
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
