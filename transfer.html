@@ -5,34 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Open Reward - Create Transaction</title>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 16px; background-color: #fcfcfc; color: #222; text-align: center; }
-        .header-container { position: relative; max-width: 600px; margin: 0 auto; height: 40px; }
-        .menu-btn { position: absolute; right: 0; top: 0; background: none; border: none; font-size: 26px; cursor: pointer; padding: 4px 8px; z-index: 1001; }
-        .dropdown-nav { display: none; flex-direction: column; gap: 8px; background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 12px; position: absolute; right: 0; top: 40px; width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; text-align: left; }
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #fcfcfc; color: #222; text-align: center; }
+        
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; }
+        .top-bar-container { max-width: 1100px; width: 100%; height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; position: relative; padding: 0 16px; box-sizing: border-box; }
+        
+        .brand-title { font-size: 20px; font-weight: bold; color: #222; text-decoration: none; line-height: 1; }
+        
+        .nav-item-dropdown-wrapper { position: relative; display: inline-block; }
+        .menu-btn { background: none; border: none; font-size: 28px; color: #000000; cursor: pointer; padding: 4px; line-height: 1; display: block; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 12px; background: #ffffff; border: 1px solid #ccc; border-radius: 8px; padding: 16px; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 220px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 1001; text-align: left; box-sizing: border-box; }
         .dropdown-nav.open { display: flex; }
-        .dropdown-nav a { text-decoration: none; color: #0056b3; padding: 4px 0; }
-        .main-content { max-width: 600px; margin: 20px auto 0 auto; }
+        .dropdown-nav a { text-decoration: none; color: #000000; font-weight: 600; font-size: 16px; }
+        
+        .main-content { max-width: 600px; margin: 90px auto 0 auto; padding: 16px; }
         .form-grid { display: flex; flex-direction: column; gap: 14px; max-width: 450px; margin: 0 auto; background: #fff; padding: 20px; border: 1px solid #ccc; border-radius: 6px; text-align: left; }
         .field { display: flex; flex-direction: column; gap: 4px; }
         select, input { padding: 8px 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; width: 100%; }
     </style>
 </head>
 <body>
-<div class="header-container">
-    <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
-    <div id="navMenu" class="dropdown-nav">
-        <a href="users.html">Show users</a>
-        <a href="products.html">Show products</a>
-        <a href="transfers.html">Show transactions</a>
-        <a href="adduser.html">Add user</a>
-        <a href="product.html">Add product</a>
-        <a href="transfer.html"><b>Create transaction</b></a>
+<header class="top-bar">
+    <div class="top-bar-container">
+        <a href="index.html" class="brand-title">Open Reward</a>
+        <div class="nav-item-dropdown-wrapper">
+            <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+            <nav id="navMenu" class="dropdown-nav">
+                <a href="users.html">Show users</a>
+                <a href="products.html">Show products</a>
+                <a href="transfers.html">Show transactions</a>
+                <a href="adduser.html">Add user</a>
+                <a href="product.html">Add product</a>
+                <a href="transfer.html"><b>Create transaction</b></a>
+            </nav>
+        </div>
     </div>
-</div>
+</header>
 
 <div class="main-content">
-    <h1>Open Reward admin</h1>
-
     <form id="transferForm" class="form-grid">
         <div class="field">
             <label for="producer">Producer:</label>
@@ -74,7 +84,7 @@
     consumerSelect.innerHTML = `<option value="0">nobody/everybody</option>` + 
         users.filter(u => u.id !== 0).map(u => `<option value="${u.id}">#${u.id} ${u.name} (${u.nbr})</option>`).join('');
     
-    productSelect.innerHTML = products.map(p => `<option value="${p.id}">#${p.id} ${p.name}</option>`).join('');
+    productSelect.innerHTML = products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 
     document.getElementById('transferForm').onsubmit = function(e) {
         e.preventDefault();
