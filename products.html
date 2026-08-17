@@ -1,58 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Open Reward - Products</title>
     <style>
-    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 1px 10px; }
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 16px; background-color: #fcfcfc; color: #222; text-align: center; }
+        .header-container { position: relative; max-width: 900px; margin: 0 auto; height: 40px; }
+        .menu-btn { position: absolute; right: 0; top: 0; background: none; border: none; font-size: 26px; cursor: pointer; padding: 4px 8px; z-index: 1001; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 8px; background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 12px; position: absolute; right: 0; top: 40px; width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; text-align: left; }
+        .dropdown-nav.open { display: flex; }
+        .dropdown-nav a { text-decoration: none; color: #0056b3; padding: 4px 0; }
+        .main-content { max-width: 900px; margin: 20px auto 0 auto; }
+        .table-controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .search-box input, select, button { padding: 6px 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 auto 16px auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; background: #fff; margin: 0 auto; }
+        table, th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: center; }
+        th { background: #f0f0f0; cursor: pointer; }
+        .table-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 12px; }
     </style>
 </head>
 <body>
-<h1>Open Reward admin</h1>
-<p>
-    <a href="users.html">Show users</a> &middot;
-    <b><a href="products.html">Show products</a></b> &middot;
-    <a href="transfers.html">Show transactions</a>
-    <br>
-    <a href="adduser.html">Add user</a> &middot;
-    <a href="product.html">Add product</a> &middot;
-    <a href="transfer.html">Create transaction</a>
-</p>
-<h3 id="table-heading">Showing all products</h3>
-
-<div class="table-controls">
-    <div class="table-info">
-        <label for="entries">Show</label>
-        <select id="entries" onchange="updateTable()">
-            <option value="10">10</option>
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-        </select>
-        <span>entries</span>
-    </div>
-    <div class="search-box">
-        <input type="text" size="29" id="search" placeholder="Search..." onkeyup="searchTable()">
+<div class="header-container">
+    <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+    <div id="navMenu" class="dropdown-nav">
+        <a href="users.html">Show users</a>
+        <a href="products.html"><b>Show products</b></a>
+        <a href="transfers.html">Show transactions</a>
+        <a href="adduser.html">Add user</a>
+        <a href="product.html">Add product</a>
+        <a href="transfer.html">Create transaction</a>
     </div>
 </div>
 
-<table id="product-table">
-    <thead>
-    <tr id="table-header-row"></tr>
-    </thead>
-    <tbody id="product-tbody"></tbody>
-</table>
+<div class="main-content">
+    <h1>Open Reward admin</h1>
+    <h3 id="table-heading">Showing all products</h3>
 
-<div class="table-pagination">
-    <span id="table-info"></span>
-    <button onclick="prevPage()">Previous</button>
-    <span id="page-numbers"></span>
-    <button onclick="nextPage()">Next</button>
+    <div class="table-controls">
+        <div class="table-info">
+            <label for="entries">Show</label>
+            <select id="entries" onchange="updateTable()">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span>entries</span>
+        </div>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Search..." onkeyup="searchTable()">
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="product-table">
+            <thead>
+            <tr id="table-header-row"></tr>
+            </thead>
+            <tbody id="product-tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="table-pagination">
+        <span id="table-info"></span>
+        <button onclick="prevPage()">Previous</button>
+        <span id="page-numbers"></span>
+        <button onclick="nextPage()">Next</button>
+    </div>
 </div>
 
 <script src="store.js"></script>
 <script>
+    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
+
     let currentPage = 1;
     let entriesPerPage = 25;
     let sortDirection = true;
@@ -84,7 +106,7 @@
                 return `<tr>
                     <td>${u.id}</td>
                     <td>${u.name}</td>
-                    <td style="overflow: hidden; max-width: 66px;">${up.benefit}</td>
+                    <td>${up.benefit}</td>
                     <td>${up.time_created}</td>
                     <td>Delete (WIP)</td>
                 </tr>`;
@@ -106,16 +128,8 @@
         displayTable();
     }
 
-    function updateTable() {
-        entriesPerPage = parseInt(document.getElementById("entries").value);
-        currentPage = 1;
-        displayTable();
-    }
-
-    function searchTable() {
-        currentPage = 1;
-        displayTable();
-    }
+    function updateTable() { entriesPerPage = parseInt(document.getElementById("entries").value); currentPage = 1; displayTable(); }
+    function searchTable() { currentPage = 1; displayTable(); }
 
     function displayTable() {
         const table = document.getElementById("product-table");
@@ -132,22 +146,6 @@
         filteredRows.slice(start, end).forEach(row => row.style.display = "");
 
         document.getElementById("table-info").innerText = `Showing ${Math.min(start + 1, totalEntries)} to ${Math.min(end, totalEntries)} of ${totalEntries} entries`;
-        updatePageNumbers(totalPages);
-    }
-
-    function updatePageNumbers(totalPages) {
-        const pageNumbers = document.getElementById("page-numbers");
-        pageNumbers.innerHTML = "";
-        const startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-        const endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-
-        for (let i = startPage; i <= endPage; i++) {
-            const btn = document.createElement("button");
-            btn.className = "pagination-button" + (i === currentPage ? " active" : "");
-            btn.innerText = i;
-            btn.onclick = () => { currentPage = i; displayTable(); };
-            pageNumbers.appendChild(btn);
-        }
     }
 
     function nextPage() { currentPage++; displayTable(); }
