@@ -1,90 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"/><title>Open Reward - Create Transaction</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Open Reward - Create Transaction</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 16px; background-color: #fcfcfc; color: #222; text-align: center; }
+        .header-container { position: relative; max-width: 600px; margin: 0 auto; height: 40px; }
+        .menu-btn { position: absolute; right: 0; top: 0; background: none; border: none; font-size: 26px; cursor: pointer; padding: 4px 8px; z-index: 1001; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 8px; background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 12px; position: absolute; right: 0; top: 40px; width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; text-align: left; }
+        .dropdown-nav.open { display: flex; }
+        .dropdown-nav a { text-decoration: none; color: #0056b3; padding: 4px 0; }
+        .main-content { max-width: 600px; margin: 20px auto 0 auto; }
+        .form-grid { display: flex; flex-direction: column; gap: 14px; max-width: 450px; margin: 0 auto; background: #fff; padding: 20px; border: 1px solid #ccc; border-radius: 6px; text-align: left; }
+        .field { display: flex; flex-direction: column; gap: 4px; }
+        select, input { padding: 8px 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; width: 100%; }
+    </style>
 </head>
 <body>
-<h1>Open Reward admin</h1>
-<p>
-  <a href="users.html">Show users</a> &middot;
-  <a href="products.html">Show products</a> &middot;
-  <a href="transfers.html">Show transactions</a><br>
-  <a href="adduser.html">Add user</a> &middot;
-  <a href="product.html">Add product</a> &middot;
-  <b><a href="transfer.html">Create transaction</a></b>
-</p>
-<form id="transferForm">
-  <table>
-    <tr><td>Producer:</td><td><select id="producer" required></select></td></tr>
-    <tr><td>Consumer:</td><td><select id="consumer" required></select></td></tr>
-    <tr><td>Product:</td><td><select id="product" required></select></td></tr>
-    <tr><td>Quantity:</td><td><input type="number" id="amount" value="1" min="1" required/></td></tr>
-    <tr><td>Comment:</td><td><input type="text" id="comment"/></td></tr>
-    <tr><td colspan="2"><input type="submit" value="Create transaction"/></td></tr>
-  </table>
-</form>
+<div class="header-container">
+    <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+    <div id="navMenu" class="dropdown-nav">
+        <a href="users.html">Show users</a>
+        <a href="products.html">Show products</a>
+        <a href="transfers.html">Show transactions</a>
+        <a href="adduser.html">Add user</a>
+        <a href="product.html">Add product</a>
+        <a href="transfer.html"><b>Create transaction</b></a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1>Open Reward admin</h1>
+
+    <form id="transferForm" class="form-grid">
+        <div class="field">
+            <label for="producer">Producer:</label>
+            <select id="producer" required></select>
+        </div>
+        <div class="field">
+            <label for="consumer">Consumer:</label>
+            <select id="consumer" required></select>
+        </div>
+        <div class="field">
+            <label for="product">Product:</label>
+            <select id="product" required></select>
+        </div>
+        <div class="field">
+            <label for="amount">Quantity:</label>
+            <input type="number" id="amount" value="1" min="1" required/>
+        </div>
+        <div class="field">
+            <label for="comment">Comment:</label>
+            <input type="text" id="comment"/>
+        </div>
+        <input type="submit" value="Create transaction" style="cursor: pointer; font-weight: bold; padding: 10px;"/>
+    </form>
+</div>
 
 <script src="store.js"></script>
 <script>
-  const users = DB.get('users');
-  const products = DB.get('products');
-  const userProducts = DB.get('user_products');
+    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
 
-  const producerSelect = document.getElementById('producer');
-  const consumerSelect = document.getElementById('consumer');
-  const productSelect = document.getElementById('product');
+    const users = DB.get('users');
+    const products = DB.get('products');
+    const userProducts = DB.get('user_products');
 
-  producerSelect.innerHTML = users.filter(u => u.id !== 0).map(u => `<option value="${u.id}">#${u.id} ${u.name} (${u.nbr})</option>`).join('');
-  consumerSelect.innerHTML = `<option value="0">nobody/everybody</option>` + 
-    users.filter(u => u.id !== 0).map(u => `<option value="${u.id}">#${u.id} ${u.name} (${u.nbr})</option>`).join('');
-  
-  productSelect.innerHTML = products.map(p => `<option value="${p.id}">#${p.id} ${p.name}</option>`).join('');
+    const producerSelect = document.getElementById('producer');
+    const consumerSelect = document.getElementById('consumer');
+    const productSelect = document.getElementById('product');
 
-  document.getElementById('transferForm').onsubmit = function(e) {
-    e.preventDefault();
-    const producerId = parseInt(producerSelect.value);
-    const consumerId = parseInt(consumerSelect.value);
-    const productId = parseInt(productSelect.value);
-    const amount = parseFloat(document.getElementById('amount').value);
-    const comment = document.getElementById('comment').value;
+    producerSelect.innerHTML = users.filter(u => u.id !== 0).map(u => `<option value="${u.id}">#${u.id} ${u.name} (${u.nbr})</option>`).join('');
+    consumerSelect.innerHTML = `<option value="0">nobody/everybody</option>` + 
+        users.filter(u => u.id !== 0).map(u => `<option value="${u.id}">#${u.id} ${u.name} (${u.nbr})</option>`).join('');
+    
+    productSelect.innerHTML = products.map(p => `<option value="${p.id}">#${p.id} ${p.name}</option>`).join('');
 
-    if (producerId === consumerId) return alert("Consumer and producer must not be the same.");
+    document.getElementById('transferForm').onsubmit = function(e) {
+        e.preventDefault();
+        const producerId = parseInt(producerSelect.value);
+        const consumerId = parseInt(consumerSelect.value);
+        const productId = parseInt(productSelect.value);
+        const amount = parseFloat(document.getElementById('amount').value);
+        const comment = document.getElementById('comment').value;
 
-    const up = userProducts.find(x => x.ProductID === productId && x.UserID === producerId);
-    if (!up) return alert("Product must be assigned to the user first.");
+        if (producerId === consumerId) return alert("Consumer and producer must not be the same.");
 
-    const consumer = users.find(u => u.id === consumerId);
-    if (consumerId !== 0 && (consumer.nbr - (up.gateway * amount) < 0)) {
-      return alert("Consumer has insufficient NBR.");
-    }
+        const up = userProducts.find(x => x.ProductID === productId && x.UserID === producerId);
+        if (!up) return alert("Product must be assigned to the user first.");
 
-    const awardedNBR = up.benefit * amount;
-    const removedNBR = consumerId !== 0 ? up.gateway * amount : 0;
+        const consumer = users.find(u => u.id === consumerId);
+        if (consumerId !== 0 && (consumer.nbr - (up.gateway * amount) < 0)) {
+            return alert("Consumer has insufficient NBR.");
+        }
 
-    // Update balances
-    const producer = users.find(u => u.id === producerId);
-    producer.nbr += awardedNBR;
-    producer.fame += awardedNBR;
-    if (consumerId !== 0) consumer.nbr -= removedNBR;
+        const awardedNBR = up.benefit * amount;
+        const removedNBR = consumerId !== 0 ? up.gateway * amount : 0;
 
-    // Record Transfer
-    const transfers = DB.get('transfers');
-    transfers.unshift({
-      id: Date.now(),
-      ProducerID: producerId,
-      ConsumerID: consumerId,
-      ProductID: productId,
-      amount,
-      nbr: awardedNBR,
-      gnbr: removedNBR,
-      comment,
-      time_created: new Date().toLocaleString()
-    });
+        const producer = users.find(u => u.id === producerId);
+        producer.nbr += awardedNBR;
+        producer.fame += awardedNBR;
+        if (consumerId !== 0) consumer.nbr -= removedNBR;
 
-    DB.set('users', users);
-    DB.set('transfers', transfers);
-    window.location.href = "transfers.html";
-  };
+        const transfers = DB.get('transfers');
+        transfers.unshift({
+            id: Date.now(),
+            ProducerID: producerId,
+            ConsumerID: consumerId,
+            ProductID: productId,
+            amount,
+            nbr: awardedNBR,
+            gnbr: removedNBR,
+            comment,
+            time_created: new Date().toLocaleString()
+        });
+
+        DB.set('users', users);
+        DB.set('transfers', transfers);
+        window.location.href = "transfers.html";
+    };
 </script>
 </body>
 </html>
