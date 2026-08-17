@@ -1,85 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Reward - Configure User Product</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 16px; background-color: #fcfcfc; color: #222; text-align: center; }
+        .header-container { position: relative; max-width: 600px; margin: 0 auto; height: 40px; }
+        .menu-btn { position: absolute; right: 0; top: 0; background: none; border: none; font-size: 26px; cursor: pointer; padding: 4px 8px; z-index: 1001; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 8px; background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 12px; position: absolute; right: 0; top: 40px; width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; text-align: left; }
+        .dropdown-nav.open { display: flex; }
+        .dropdown-nav a { text-decoration: none; color: #0056b3; padding: 4px 0; }
+        .main-content { max-width: 600px; margin: 20px auto 0 auto; }
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 auto; }
+        table { width: 100%; min-width: 450px; border-collapse: collapse; margin: 0 auto; background: #fff; }
+        td, th { padding: 8px; text-align: center; }
+        input[type="number"], input[type="range"] { width: 100%; box-sizing: border-box; padding: 6px; }
+    </style>
 </head>
 <body>
-<h1>Open Reward admin</h1>
-<p>
-    <a href="users.html">Show users</a> &middot;
-    <a href="products.html">Show products</a> &middot;
-    <a href="transfers.html">Show transactions</a>
-    <br>
-    <a href="adduser.html">Add user</a> &middot;
-    <b><a href="product.html">Add product</a></b> &middot;
-    <a href="transfer.html">Create transaction</a>
-</p>
-<form id="productConfigForm">
-    <table>
-        <tr>
-            <td><label for="gateway">gateway</label></td>
-            <td></td><td><input type="number" id="gateway" min="0" step="0.000001" required autofocus /></td><td></td>
-        </tr>
-        <tr><td colspan="4"><hr></td></tr>
-        <tr>
-            <td><label for="resabundance">resource abundance</label></td>
-            <td>0</td><td><input type="number" id="resabundance" min="0" step="0.01" value="1" required /></td><td>&infin;</td>
-        </tr>
-        <tr>
-            <td><label for="beneficiaries">number of beneficiaries</label></td>
-            <td>0</td><td><input type="number" id="beneficiaries" min="0" value="1" required /></td><td>&infin;</td>
-        </tr>
-        <tr>
-            <td><label for="producers">number of producers</label></td>
-            <td>0</td><td><input type="number" id="producers" min="0" value="1" required /></td><td>&infin;</td>
-        </tr>
-        <tr><td colspan="4"><hr></td></tr>
-        <tr>
-            <td><label for="conssubben">consumer subjective benefit</label></td>
-            <td>-100%</td><td><input type="range" id="conssubben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
-        </tr>
-        <tr>
-            <td><label for="ccs">consumer subj. benefit tun.</label></td>
-            <td>0</td><td><input type="number" id="ccs" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
-        </tr>
-        <tr>
-            <td><label for="consobjben">consumer objective benefit</label></td>
-            <td>-100%</td><td><input type="range" id="consobjben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
-        </tr>
-        <tr>
-            <td><label for="cco">consumer objective benefit tun.</label></td>
-            <td>0</td><td><input type="number" id="cco" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
-        </tr>
-        <tr><td colspan="4"><hr></td></tr>
-        <tr>
-            <td><label for="envben">environmental benefit</label></td>
-            <td>-100%</td><td><input type="range" id="envben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
-        </tr>
-        <tr>
-            <td><label for="ceb">environmental benefit tun.</label></td>
-            <td>0</td><td><input type="number" id="ceb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
-        </tr>
-        <tr>
-            <td><label for="humanben">human benefit</label></td>
-            <td>-100%</td><td><input type="range" id="humanben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
-        </tr>
-        <tr>
-            <td><label for="chb">human benefit tun.</label></td>
-            <td>0</td><td><input type="number" id="chb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
-        </tr>
-        <tr><td colspan="4"><hr></td></tr>
-        <tr>
-            <td colspan="2">Formula implemented locally via math specs.</td>
-            <td><input type="submit" value="Submit" /></td>
-            <td></td>
-        </tr>
-    </table>
-</form>
+<div class="header-container">
+    <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+    <div id="navMenu" class="dropdown-nav">
+        <a href="users.html">Show users</a>
+        <a href="products.html">Show products</a>
+        <a href="transfers.html">Show transactions</a>
+        <a href="adduser.html">Add user</a>
+        <a href="product.html"><b>Add product</b></a>
+        <a href="transfer.html">Create transaction</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1>Open Reward admin</h1>
+
+    <form id="productConfigForm">
+        <div class="table-container">
+            <table>
+                <tr>
+                    <td><label for="gateway">gateway</label></td>
+                    <td>0</td><td><input type="number" id="gateway" min="0" step="0.000001" required autofocus /></td><td>&infin;</td>
+                </tr>
+                <tr><td colspan="4"><hr></td></tr>
+                <tr>
+                    <td><label for="resabundance">resource abundance</label></td>
+                    <td>0</td><td><input type="number" id="resabundance" min="0" step="0.01" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr>
+                    <td><label for="beneficiaries">number of beneficiaries</label></td>
+                    <td>0</td><td><input type="number" id="beneficiaries" min="0" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr>
+                    <td><label for="producers">number of producers</label></td>
+                    <td>0</td><td><input type="number" id="producers" min="0" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr><td colspan="4"><hr></td></tr>
+                <tr>
+                    <td><label for="conssubben">consumer subjective benefit</label></td>
+                    <td>-100%</td><td><input type="range" id="conssubben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
+                </tr>
+                <tr>
+                    <td><label for="ccs">consumer subj. benefit tun.</label></td>
+                    <td>0</td><td><input type="number" id="ccs" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr>
+                    <td><label for="consobjben">consumer objective benefit</label></td>
+                    <td>-100%</td><td><input type="range" id="consobjben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
+                </tr>
+                <tr>
+                    <td><label for="cco">consumer objective benefit tun.</label></td>
+                    <td>0</td><td><input type="number" id="cco" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr><td colspan="4"><hr></td></tr>
+                <tr>
+                    <td><label for="envben">environmental benefit</label></td>
+                    <td>-100%</td><td><input type="range" id="envben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
+                </tr>
+                <tr>
+                    <td><label for="ceb">environmental benefit tun.</label></td>
+                    <td>0</td><td><input type="number" id="ceb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr>
+                    <td><label for="humanben">human benefit</label></td>
+                    <td>-100%</td><td><input type="range" id="humanben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
+                </tr>
+                <tr>
+                    <td><label for="chb">human benefit tun.</label></td>
+                    <td>0</td><td><input type="number" id="chb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr><td colspan="4"><hr></td></tr>
+                <tr>
+                    <td colspan="2">Calculated locally</td>
+                    <td colspan="2"><input type="submit" value="Submit" style="padding: 8px 16px; cursor: pointer;"/></td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</div>
 
 <script src="store.js"></script>
 <script>
+    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
+
     const urlParams = new URLSearchParams(window.location.search);
     const userId = parseInt(urlParams.get('user_id'));
     const productId = parseInt(urlParams.get('product_id'));
@@ -110,7 +132,6 @@
         const chb = parseFloat(document.getElementById('chb').value);
         const humanben = parseFloat(document.getElementById('humanben').value);
 
-        // Replicating Rust Rust Math Formula: ceil(resabundance * ln(1 + beneficiaries/producers) * sum_benefits) clamped at 0
         const rawBenefit = resabundance * Math.log(1.0 + (beneficiaries / producers)) * 
             ((ccs * conssubben) + (cco * consobjben) + (ceb * envben) + (chb * humanben));
         const benefit = Math.max(0, Math.ceil(rawBenefit));
