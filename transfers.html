@@ -1,85 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Open Reward - Transactions</title>
     <style>
-    table, th, td {
-        border: 1px solid black;
-        border-collapse: collapse;
-        padding: 1px 10px;
-    }
-    .visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        margin: -1px;
-        padding: 0;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-    }
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 16px; background-color: #fcfcfc; color: #222; text-align: center; }
+        .header-container { position: relative; max-width: 1000px; margin: 0 auto; height: 40px; }
+        .menu-btn { position: absolute; right: 0; top: 0; background: none; border: none; font-size: 26px; cursor: pointer; padding: 4px 8px; z-index: 1001; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 8px; background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 12px; position: absolute; right: 0; top: 40px; width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; text-align: left; }
+        .dropdown-nav.open { display: flex; }
+        .dropdown-nav a { text-decoration: none; color: #0056b3; padding: 4px 0; }
+        .main-content { max-width: 1000px; margin: 20px auto 0 auto; }
+        .table-controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .search-box input, select, button, textarea { padding: 6px 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 auto 16px auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; background: #fff; margin: 0 auto; }
+        table, th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: center; }
+        th { background: #f0f0f0; cursor: pointer; }
+        .table-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 12px; }
     </style>
 </head>
 <body>
-<h1>Open Reward admin</h1>
-<p>
-    <a href="users.html">Show users</a> &middot;
-    <a href="products.html">Show products</a> &middot;
-    <b><a href="transfers.html">Show transactions</a></b>
-    <br>
-    <a href="adduser.html">Add user</a> &middot;
-    <a href="product.html">Add product</a> &middot;
-    <a href="transfer.html">Create transaction</a>
-</p>
-<div class="table-controls">
-    <div class="table-info">
-        <label for="entries">Show</label>
-        <select id="entries" onchange="updateTable()">
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-        </select>
-        <span>entries</span>
-    </div>
-    <div class="search-box">
-        <input type="text" size="29" id="search" placeholder="Search..." onkeyup="searchTable()">
+<div class="header-container">
+    <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+    <div id="navMenu" class="dropdown-nav">
+        <a href="users.html">Show users</a>
+        <a href="products.html">Show products</a>
+        <a href="transfers.html"><b>Show transactions</b></a>
+        <a href="adduser.html">Add user</a>
+        <a href="product.html">Add product</a>
+        <a href="transfer.html">Create transaction</a>
     </div>
 </div>
 
-<table id="data-table">
-    <thead>
-    <tr>
-        <th onclick="sortTable(0)">ID <span class="sort-indicator" id="sort-indicator-0">▲▼</span></th>
-        <th onclick="sortTable(1)">Producer <span class="sort-indicator" id="sort-indicator-1">▲▼</span></th>
-        <th onclick="sortTable(2)">Consumer <span class="sort-indicator" id="sort-indicator-2">▲▼</span></th>
-        <th onclick="sortTable(3)">Product <span class="sort-indicator" id="sort-indicator-3">▲▼</span></th>
-        <th onclick="sortTable(4)">Amount <span class="sort-indicator" id="sort-indicator-4">▲▼</span></th>
-        <th onclick="sortTable(5)">NBR awarded <span class="sort-indicator" id="sort-indicator-5">▲▼</span></th>
-        <th onclick="sortTable(6)">NBR removed <span class="sort-indicator" id="sort-indicator-6">▲▼</span></th>
-        <th onclick="sortTable(7)">Created <span class="sort-indicator" id="sort-indicator-7">▲▼</span></th>
-        <th>Note</th>
-        <th>Operation</th>
-    </tr>
-    </thead>
-    <tbody id="transfer-tbody"></tbody>
-</table>
+<div class="main-content">
+    <h1>Open Reward admin</h1>
 
-<div class="table-pagination">
-    <span id="table-info"></span>
-    <button onclick="prevPage()">Previous</button>
-    <span id="page-numbers"></span>
-    <button onclick="nextPage()">Next</button>
+    <div class="table-controls">
+        <div class="table-info">
+            <label for="entries">Show</label>
+            <select id="entries" onchange="updateTable()">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span>entries</span>
+        </div>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Search..." onkeyup="searchTable()">
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="data-table">
+            <thead>
+            <tr>
+                <th onclick="sortTable(0)">ID <span class="sort-indicator" id="sort-indicator-0">▲▼</span></th>
+                <th onclick="sortTable(1)">Producer <span class="sort-indicator" id="sort-indicator-1">▲▼</span></th>
+                <th onclick="sortTable(2)">Consumer <span class="sort-indicator" id="sort-indicator-2">▲▼</span></th>
+                <th onclick="sortTable(3)">Product <span class="sort-indicator" id="sort-indicator-3">▲▼</span></th>
+                <th onclick="sortTable(4)">Amount <span class="sort-indicator" id="sort-indicator-4">▲▼</span></th>
+                <th onclick="sortTable(5)">NBR awarded <span class="sort-indicator" id="sort-indicator-5">▲▼</span></th>
+                <th onclick="sortTable(6)">NBR removed <span class="sort-indicator" id="sort-indicator-6">▲▼</span></th>
+                <th onclick="sortTable(7)">Created <span class="sort-indicator" id="sort-indicator-7">▲▼</span></th>
+                <th>Note</th>
+                <th>Operation</th>
+            </tr>
+            </thead>
+            <tbody id="transfer-tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="table-pagination">
+        <span id="table-info"></span>
+        <button onclick="prevPage()">Previous</button>
+        <span id="page-numbers"></span>
+        <button onclick="nextPage()">Next</button>
+    </div>
 </div>
 
 <script src="store.js"></script>
 <script>
+    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
+
     let currentPage = 1;
     let entriesPerPage = 10;
     let sortDirection = Array(8).fill(true);
-    const maxPageButtons = 10;
 
     function renderTransfers() {
         const transfers = DB.get('transfers');
@@ -98,14 +106,13 @@
                 <td>${c.name}</td>
                 <td>${prod.name}</td>
                 <td>${t.amount}</td>
-                <td style="overflow: hidden; max-width: 66px;">${t.nbr}</td>
-                <td style="overflow: hidden; max-width: 66px;">${t.gnbr}</td>
+                <td>${t.nbr}</td>
+                <td>${t.gnbr}</td>
                 <td>${t.time_created}</td>
                 <td>
-                    <form onsubmit="updateComment(event, ${t.id})" style="margin-top: 8px;">
-                        <label for="comment-${t.id}" class="visually-hidden">Edit note</label>
-                        <textarea id="comment-${t.id}" name="updated_comment" rows="2" style="width:100%;" oninput="autoExpand(this)">${t.comment || ''}</textarea>
-                        <button type="submit">Save edit</button>
+                    <form onsubmit="updateComment(event, ${t.id})">
+                        <textarea id="comment-${t.id}" rows="2" style="width:100%; box-sizing: border-box;">${t.comment || ''}</textarea>
+                        <button type="submit" style="margin-top: 4px;">Save edit</button>
                     </form>
                 </td>
                 <td>
@@ -114,7 +121,6 @@
             </tr>`;
         }).join('');
 
-        document.querySelectorAll('textarea').forEach(textarea => autoExpand(textarea));
         displayTable();
     }
 
@@ -137,7 +143,6 @@
         const t = transfers.find(x => x.id === id);
 
         if (t) {
-            // Revert balances matching Rust route logic: MAX(0.0, balance - NBR)
             const producer = users.find(u => u.id === t.ProducerID);
             if (producer) {
                 producer.nbr = Math.max(0.0, producer.nbr - t.nbr);
@@ -155,16 +160,8 @@
         }
     }
 
-    function updateTable() {
-        entriesPerPage = parseInt(document.getElementById("entries").value);
-        currentPage = 1;
-        displayTable();
-    }
-
-    function searchTable() {
-        currentPage = 1;
-        displayTable();
-    }
+    function updateTable() { entriesPerPage = parseInt(document.getElementById("entries").value); currentPage = 1; displayTable(); }
+    function searchTable() { currentPage = 1; displayTable(); }
 
     function displayTable() {
         const table = document.getElementById("data-table");
@@ -182,27 +179,6 @@
         filteredRows.slice(start, end).forEach(row => row.style.display = "");
 
         document.getElementById("table-info").innerText = `Showing ${Math.min(start + 1, totalEntries)} to ${Math.min(end, totalEntries)} of ${totalEntries} entries`;
-        updatePageNumbers(totalPages);
-    }
-
-    function updatePageNumbers(totalPages) {
-        const pageNumbers = document.getElementById("page-numbers");
-        pageNumbers.innerHTML = "";
-
-        const startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-        const endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-
-        for (let i = startPage; i <= endPage; i++) {
-            const pageButton = document.createElement("button");
-            pageButton.className = "pagination-button";
-            if (i === currentPage) pageButton.classList.add("active");
-            pageButton.innerText = i;
-            pageButton.onclick = () => {
-                currentPage = i;
-                displayTable();
-            };
-            pageNumbers.appendChild(pageButton);
-        }
     }
 
     function nextPage() { currentPage++; displayTable(); }
@@ -222,23 +198,6 @@
 
         sortDirection[n] = !ascending;
         rows.forEach(row => tbody.appendChild(row));
-        updateSortIndicators(n, ascending);
-    }
-
-    function updateSortIndicators(columnIndex, ascending) {
-        const indicators = document.querySelectorAll(".sort-indicator");
-        indicators.forEach((indicator, index) => {
-            if (index === columnIndex) {
-                indicator.innerText = ascending ? "▲" : "▼";
-            } else {
-                indicator.innerText = "▲▼";
-            }
-        });
-    }
-
-    function autoExpand(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = (textarea.scrollHeight) + 'px';
     }
 
     renderTransfers();
