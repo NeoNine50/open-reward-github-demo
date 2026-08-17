@@ -1,29 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Open Reward - Add User</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Reward - Add</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 16px; background-color: #fcfcfc; color: #222; text-align: center; }
+        .header-container { position: relative; max-width: 600px; margin: 0 auto; height: 40px; }
+        .menu-btn { position: absolute; right: 0; top: 0; background: none; border: none; font-size: 26px; cursor: pointer; padding: 4px 8px; z-index: 1001; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 8px; background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 12px; position: absolute; right: 0; top: 40px; width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; text-align: left; }
+        .dropdown-nav.open { display: flex; }
+        .dropdown-nav a { text-decoration: none; color: #0056b3; padding: 4px 0; }
+        .main-content { max-width: 600px; margin: 20px auto 0 auto; }
+        .form-group { margin: 20px auto; display: flex; flex-direction: column; gap: 6px; max-width: 400px; align-items: center; }
+        input[type="text"], button, input[type="submit"] { padding: 8px 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+    </style>
 </head>
 <body>
-<h1>Open Reward admin</h1>
-<p>
-    <a href="users.html">Show users</a> &middot;
-    <a href="products.html">Show products</a> &middot;
-    <a href="transfers.html">Show transactions</a>
-    <br>
-    <b><a href="adduser.html">Add user</a></b> &middot;
-    <a href="product.html">Add product</a> &middot;
-    <a href="transfer.html">Create transaction</a>
-</p>
-<form id="addUserForm">
-    <label for="name">Name:</label>
-    <input type="text" name="name" id="name" required autofocus/>
-    <input type="submit" value="Submit" />
-</form>
+<div class="header-container">
+    <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+    <div id="navMenu" class="dropdown-nav">
+        <a href="users.html">Show users</a>
+        <a href="products.html">Show products</a>
+        <a href="transfers.html">Show transactions</a>
+        <a href="adduser.html"><b>Add user</b></a>
+        <a href="product.html">Add product</a>
+        <a href="transfer.html">Create transaction</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1>Open Reward admin</h1>
+
+    <form id="addUserForm">
+        <div class="form-group">
+            <label for="name"><b>Name:</b></label>
+            <input type="text" name="name" id="name" required autofocus/>
+        </div>
+        <div style="max-width: 400px; margin: 0 auto;">
+            <input type="submit" value="Submit" style="cursor: pointer;"/>
+        </div>
+    </form>
+</div>
 
 <script src="store.js"></script>
 <script>
+    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
+
     document.getElementById('addUserForm').onsubmit = function(e) {
         e.preventDefault();
         const users = DB.get('users');
