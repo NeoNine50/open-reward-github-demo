@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Open Reward - Add Product</title>
+</head>
+<body>
+<h1>Open Reward admin</h1>
+<p>
+    <a href="users.html">Show users</a> &middot;
+    <a href="products.html">Show products</a> &middot;
+    <a href="transfers.html">Show transactions</a>
+    <br>
+    <a href="adduser.html">Add user</a> &middot;
+    <b><a href="product.html">Add product</a></b> &middot;
+    <a href="transfer.html">Create transaction</a>
+</p>
+<form id="addProductForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" required autofocus/>
+    <input type="submit" value="Submit" />
+</form>
+
+<script src="store.js"></script>
+<script>
+    document.getElementById('addProductForm').onsubmit = function(e) {
+        e.preventDefault();
+        const products = DB.get('products');
+        const nameInput = document.getElementById('name').value;
+
+        products.push({
+            id: Date.now(),
+            name: nameInput,
+            gateway: 0,
+            benefit: 0,
+            time_created: new Date().toLocaleString()
+        });
+
+        DB.set('products', products);
+        window.location.href = 'products.html';
+    };
+</script>
+</body>
+</html>
