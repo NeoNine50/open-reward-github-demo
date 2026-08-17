@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Open Reward - Add User</title>
+</head>
+<body>
+<h1>Open Reward admin</h1>
+<p>
+    <a href="users.html">Show users</a> &middot;
+    <a href="products.html">Show products</a> &middot;
+    <a href="transfers.html">Show transactions</a>
+    <br>
+    <b><a href="adduser.html">Add user</a></b> &middot;
+    <a href="product.html">Add product</a> &middot;
+    <a href="transfer.html">Create transaction</a>
+</p>
+<form id="addUserForm">
+    <label for="name">Name:</label>
+    <input type="text" name="name" id="name" required autofocus/>
+    <input type="submit" value="Submit" />
+</form>
+
+<script src="store.js"></script>
+<script>
+    document.getElementById('addUserForm').onsubmit = function(e) {
+        e.preventDefault();
+        const users = DB.get('users');
+        const nameInput = document.getElementById('name').value;
+
+        users.push({
+            id: Date.now(),
+            name: nameInput,
+            nbr: 0,
+            fame: 0,
+            time_created: new Date().toLocaleString()
+        });
+
+        DB.set('users', users);
+        window.location.href = 'users.html';
+    };
+</script>
+</body>
+</html>
