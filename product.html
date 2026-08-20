@@ -18,17 +18,33 @@
         .dropdown-nav.open { display: flex; }
         .dropdown-nav a { text-decoration: none; color: #000000; font-weight: 600; font-size: 16px; }
         
-        .main-content { max-width: 600px; margin: 90px auto 0 auto; padding: 16px; }
+        .main-content { max-width: 600px; margin: 90px auto 0 auto; padding: 16px; transition: opacity 0.3s ease; }
         .form-group { margin: 20px auto; display: flex; flex-direction: column; gap: 6px; max-width: 400px; align-items: center; }
         input[type="text"], button, input[type="submit"] { padding: 8px 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+
+        /* Loader Overlay */
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.7); display: none;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .spinner {
+            width: 48px; height: 48px; border: 5px solid #ccc;
+            border-top: 5px solid #000; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+<div id="loader-overlay"><div class="spinner"></div></div>
+
 <header class="top-bar">
     <div class="top-bar-container">
         <a href="index.html" class="brand-title">Open Reward</a>
         <div class="nav-item-dropdown-wrapper">
-            <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+            <button class="menu-btn" onclick="toggleNav(event)" aria-label="Toggle menu">&#9776;</button>
             <nav id="navMenu" class="dropdown-nav">
                 <a href="users.html">Show users</a>
                 <a href="products.html">Show products</a>
@@ -57,15 +73,48 @@
 
 <script src="store.js"></script>
 <script>
-    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
+    function showLoading() {
+        document.getElementById('loader-overlay').style.display = 'flex';
+        document.querySelector('.main-content').style.opacity = '0.3';
+    }
+
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.href && !this.href.startsWith('javascript') && this.target !== '_blank') {
+                showLoading();
+            }
+        });
+    });
+
+    function toggleNav(e) { 
+        if (e) e.stopPropagation();
+        document.getElementById('navMenu').classList.toggle('open'); 
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.nav-item-dropdown-wrapper');
+        const navMenu = document.getElementById('navMenu');
+        if (wrapper && !wrapper.contains(e.target)) {
+            navMenu.classList.remove('open');
+        }
+    });
 
     document.getElementById('addProductForm').onsubmit = function(e) {
         e.preventDefault();
         const products = DB.get('products');
-        const nameInput = document.getElementById('name').value;
+        const nameInput = document.getElementById('name').value.trim();
+
+        const exists = products.some(p => p.name.toLowerCase() === nameInput.toLowerCase());
+        if (exists) {
+            alert("A product with this name already exists.");
+            return;
+        }
+
+        const maxId = products.reduce((max, p) => (p.id > max ? p.id : max), 0);
+        const newId = maxId + 1;
 
         products.push({
-            id: Date.now(),
+            id: newId,
             name: nameInput,
             gateway: 0,
             benefit: 0,
@@ -73,6 +122,7 @@
         });
 
         DB.set('products', products);
+        showLoading();
         window.location.href = 'products.html';
     };
 </script>
