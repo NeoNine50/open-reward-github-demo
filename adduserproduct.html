@@ -18,7 +18,6 @@
         .dropdown-nav.open { display: flex; }
         .dropdown-nav a { text-decoration: none; color: #000000; font-weight: 600; font-size: 16px; }
         
-        /* Enclosed Lighter Border Card Around Page Content */
         .main-content { max-width: 600px; margin: 90px auto 30px auto; padding: 24px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box; overflow: visible; }
         
         .config-header { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 16px; text-align: left; }
@@ -30,7 +29,6 @@
         td, th { padding: 8px 4px; text-align: center; vertical-align: middle; position: relative; }
         input[type="number"] { width: 100%; box-sizing: border-box; padding: 6px; }
 
-        /* Full width slider with no gaps */
         input[type="range"] {
             width: 100%;
             margin: 0;
@@ -39,7 +37,6 @@
             box-sizing: border-box;
         }
 
-        /* Tooltip Styling */
         .tooltip-help {
             display: inline-block;
             width: 16px;
@@ -110,7 +107,7 @@
     <div class="top-bar-container">
         <a href="index.html" class="brand-title">Open Reward</a>
         <div class="nav-item-dropdown-wrapper">
-            <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+            <button class="menu-btn" onclick="toggleNav(event)" aria-label="Toggle menu">&#9776;</button>
             <nav id="navMenu" class="dropdown-nav">
                 <a href="users.html">Show users</a>
                 <a href="products.html">Show products</a>
@@ -136,7 +133,7 @@
                     <td>
                         <label for="gateway">
                             gateway
-                            <span class="tooltip-help tooltip-down" data-hint="Amount the consumer needs to be in credit to access this product.">?</span>
+                            <span class="tooltip-help tooltip-down" data-hint="Credit required by the consumer to access this product.">?</span>
                         </label>
                     </td>
                     <td>0</td><td><input type="number" id="gateway" value="0" min="0" required autofocus /></td><td>&infin;</td>
@@ -268,7 +265,18 @@
         });
     });
 
-    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
+    function toggleNav(e) { 
+        if (e) e.stopPropagation();
+        document.getElementById('navMenu').classList.toggle('open'); 
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.nav-item-dropdown-wrapper');
+        const navMenu = document.getElementById('navMenu');
+        if (wrapper && !wrapper.contains(e.target)) {
+            navMenu.classList.remove('open');
+        }
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = parseInt(urlParams.get('user_id'));
@@ -340,7 +348,7 @@
 
         DB.set('user_products', userProducts);
         showLoading();
-        window.location.href = "users.html";
+        window.location.href = `products.html?producers_of=${productId}`;
     };
 </script>
 </body>
