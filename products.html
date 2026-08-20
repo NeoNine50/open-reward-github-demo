@@ -151,8 +151,9 @@
             headerRow.innerHTML = `
                 <th onclick="sortTable(0)">ID <span class="sort-arrow" id="sort-arrow-0">▲▼</span></th>
                 <th onclick="sortTable(1)">Name <span class="sort-arrow" id="sort-arrow-1">▲▼</span></th>
-                <th onclick="sortTable(2)">Benefit <span class="sort-arrow" id="sort-arrow-2">▲▼</span></th>
-                <th onclick="sortTable(3)">Created <span class="sort-arrow" id="sort-arrow-3">▲▼</span></th>
+                <th onclick="sortTable(2)">Gateway <span class="sort-arrow" id="sort-arrow-2">▲▼</span></th>
+                <th onclick="sortTable(3)">Benefit <span class="sort-arrow" id="sort-arrow-3">▲▼</span></th>
+                <th onclick="sortTable(4)">Created <span class="sort-arrow" id="sort-arrow-4">▲▼</span></th>
                 <th>Operation</th>
             `;
 
@@ -162,6 +163,7 @@
                 return `<tr>
                     <td>${u.id}</td>
                     <td>${u.name}</td>
+                    <td>${up.gateway}</td>
                     <td>${up.benefit}</td>
                     <td>${up.time_created}</td>
                     <td>
@@ -176,7 +178,7 @@
             headerRow.innerHTML = `
                 <th onclick="sortTable(0)">ID <span class="sort-arrow" id="sort-arrow-0">▲▼</span></th>
                 <th onclick="sortTable(1)">Name <span class="sort-arrow" id="sort-arrow-1">▲▼</span></th>
-                <th onclick="sortTable(2)">Created <span class="sort-arrow" id="sort-arrow-3">▲▼</span></th>
+                <th onclick="sortTable(2)">Created <span class="sort-arrow" id="sort-arrow-2">▲▼</span></th>
                 <th>Operation</th>
             `;
             tbody.innerHTML = products.map(p => `<tr>
