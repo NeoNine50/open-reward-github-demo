@@ -27,6 +27,9 @@
         th { background: #f0f0f0; cursor: pointer; }
         .table-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 12px; }
 
+        .op-actions { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+        .op-actions button { width: 100%; max-width: 120px; }
+
         /* Loader Overlay */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -49,7 +52,7 @@
     <div class="top-bar-container">
         <a href="index.html" class="brand-title">Open Reward</a>
         <div class="nav-item-dropdown-wrapper">
-            <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+            <button class="menu-btn" onclick="toggleNav(event)" aria-label="Toggle menu">&#9776;</button>
             <nav id="navMenu" class="dropdown-nav">
                 <a href="users.html">Show users</a>
                 <a href="products.html">Show products</a>
@@ -117,13 +120,24 @@
 
     document.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', function(e) {
-            if (this.href && !this.href.startsWith('javascript')) {
+            if (this.href && !this.href.startsWith('javascript') && this.target !== '_blank') {
                 showLoading();
             }
         });
     });
 
-    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
+    function toggleNav(e) { 
+        if (e) e.stopPropagation();
+        document.getElementById('navMenu').classList.toggle('open'); 
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.nav-item-dropdown-wrapper');
+        const navMenu = document.getElementById('navMenu');
+        if (wrapper && !wrapper.contains(e.target)) {
+            navMenu.classList.remove('open');
+        }
+    });
 
     let currentPage = 1;
     let entriesPerPage = 10;
@@ -150,8 +164,10 @@
                 <td>${t.gnbr}</td>
                 <td>${t.time_created}</td>
                 <td>
-                    <button onclick="showLoading(); window.location.href='viewtransfer.html?id=${t.id}';">View details</button>
-                    <button onclick="deleteTransfer(${t.id})">Delete record</button>
+                    <div class="op-actions">
+                        <button onclick="showLoading(); window.location.href='viewtransfer.html?id=${t.id}';">View details</button>
+                        <button onclick="deleteTransfer(${t.id})">Delete record</button>
+                    </div>
                 </td>
             </tr>`;
         }).join('');
