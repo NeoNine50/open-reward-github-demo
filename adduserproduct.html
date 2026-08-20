@@ -18,14 +18,94 @@
         .dropdown-nav.open { display: flex; }
         .dropdown-nav a { text-decoration: none; color: #000000; font-weight: 600; font-size: 16px; }
         
-        .main-content { max-width: 600px; margin: 90px auto 0 auto; padding: 16px; }
-        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 auto; }
-        table { width: 100%; min-width: 450px; border-collapse: collapse; margin: 0 auto; background: #fff; }
-        td, th { padding: 8px; text-align: center; }
-        input[type="number"], input[type="range"] { width: 100%; box-sizing: border-box; padding: 6px; }
+        /* Enclosed Lighter Border Card Around Page Content */
+        .main-content { max-width: 600px; margin: 90px auto 30px auto; padding: 24px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box; overflow: visible; }
+        
+        .config-header { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 16px; text-align: left; }
+        .config-header-row { display: flex; gap: 8px; font-size: 16px; margin-bottom: 6px; }
+        .config-header-label { font-weight: bold; min-width: 90px; }
+
+        .table-container { overflow: visible; margin: 0 auto; }
+        table { width: 100%; min-width: 480px; border-collapse: collapse; margin: 0 auto; background: #fff; }
+        td, th { padding: 8px 4px; text-align: center; vertical-align: middle; position: relative; }
+        input[type="number"] { width: 100%; box-sizing: border-box; padding: 6px; }
+
+        /* Full width slider with no gaps */
+        input[type="range"] {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        /* Tooltip Styling */
+        .tooltip-help {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-color: #0076ff;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            cursor: pointer;
+            margin-left: 4px;
+            position: relative;
+        }
+
+        .tooltip-help::after {
+            content: attr(data-hint);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: normal;
+            white-space: normal;
+            width: 220px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 2000;
+            pointer-events: none;
+            text-align: left;
+        }
+
+        .tooltip-help.tooltip-down::after {
+            bottom: auto;
+            top: 125%;
+        }
+
+        .tooltip-help:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.7); display: none;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .spinner {
+            width: 48px; height: 48px; border: 5px solid #ccc;
+            border-top: 5px solid #000; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+<div id="loader-overlay"><div class="spinner"></div></div>
+
 <header class="top-bar">
     <div class="top-bar-container">
         <a href="index.html" class="brand-title">Open Reward</a>
@@ -44,64 +124,129 @@
 </header>
 
 <div class="main-content">
+    <div class="config-header">
+        <div class="config-header-row"><span class="config-header-label">Producer:</span> <span id="producer-name">...</span></div>
+        <div class="config-header-row"><span class="config-header-label">Product:</span> <span id="product-name">...</span></div>
+    </div>
+
     <form id="productConfigForm">
         <div class="table-container">
             <table>
                 <tr>
-                    <td><label for="gateway">gateway</label></td>
-                    <td>0</td><td><input type="number" id="gateway" min="0" step="0.000001" required autofocus /></td><td>&infin;</td>
+                    <td>
+                        <label for="gateway">
+                            gateway
+                            <span class="tooltip-help tooltip-down" data-hint="Amount the consumer needs to be in credit to access this product.">?</span>
+                        </label>
+                    </td>
+                    <td>0</td><td><input type="number" id="gateway" value="0" min="0" required autofocus /></td><td>&infin;</td>
                 </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
-                    <td><label for="resabundance">resource abundance</label></td>
+                    <td>
+                        <label for="resabundance">
+                            resource abundance
+                            <span class="tooltip-help" data-hint="Regarding a given act that produced the result we're measuring, what kind of resources were used in creating the result and how abundant/renewable are they?">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="resabundance" min="0" step="0.01" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr>
-                    <td><label for="beneficiaries">number of beneficiaries</label></td>
+                    <td>
+                        <label for="beneficiaries">
+                            number of beneficiaries
+                            <span class="tooltip-help" data-hint="How many people want what the producer is producing?">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="beneficiaries" min="0" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr>
-                    <td><label for="producers">number of producers</label></td>
+                    <td>
+                        <label for="producers">
+                            number of producers
+                            <span class="tooltip-help" data-hint="How many other people are doing what this one producer is doing?">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="producers" min="0" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
-                    <td><label for="conssubben">consumer subjective benefit</label></td>
-                    <td>-100%</td><td><input type="range" id="conssubben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
+                    <td>
+                        <label for="conssubben">
+                            consumer subjective benefit
+                            <span class="tooltip-help" data-hint="What are the subjective benefits, i.e. how much does the consumer like what they consumed?">?</span>
+                        </label>
+                    </td>
+                    <td style="font-size: 18px;">😠</td><td><input type="range" id="conssubben" min="-2" max="2" step="1" value="0" required /></td><td style="font-size: 18px;">😊</td>
                 </tr>
                 <tr>
-                    <td><label for="ccs">consumer subj. benefit tun.</label></td>
+                    <td>
+                        <label for="ccs">
+                            consumer subj. benefit tun.
+                            <span class="tooltip-help" data-hint="Tuning multiplier for consumer subjective benefit.">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="ccs" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr>
-                    <td><label for="consobjben">consumer objective benefit</label></td>
+                    <td>
+                        <label for="consobjben">
+                            consumer objective benefit
+                            <span class="tooltip-help" data-hint="What are the (objective) benefits to the consumer when the consumer consumes what the producer is producing?">?</span>
+                        </label>
+                    </td>
                     <td>-100%</td><td><input type="range" id="consobjben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
                 </tr>
                 <tr>
-                    <td><label for="cco">consumer objective benefit tun.</label></td>
+                    <td>
+                        <label for="cco">
+                            consumer objective benefit tun.
+                            <span class="tooltip-help" data-hint="Tuning multiplier for consumer objective benefit.">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="cco" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
-                    <td><label for="envben">environmental benefit</label></td>
+                    <td>
+                        <label for="envben">
+                            environmental benefit
+                            <span class="tooltip-help" data-hint="What are the environmental impacts of the act?">?</span>
+                        </label>
+                    </td>
                     <td>-100%</td><td><input type="range" id="envben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
                 </tr>
                 <tr>
-                    <td><label for="ceb">environmental benefit tun.</label></td>
+                    <td>
+                        <label for="ceb">
+                            environmental benefit tun.
+                            <span class="tooltip-help" data-hint="Tuning multiplier for environmental benefit.">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="ceb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr>
-                    <td><label for="humanben">human benefit</label></td>
+                    <td>
+                        <label for="humanben">
+                            human benefit
+                            <span class="tooltip-help" data-hint="How resilient does the act/result make humanity? Also, how big of an area does the act benefit?">?</span>
+                        </label>
+                    </td>
                     <td>-100%</td><td><input type="range" id="humanben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
                 </tr>
                 <tr>
-                    <td><label for="chb">human benefit tun.</label></td>
+                    <td>
+                        <label for="chb">
+                            human benefit tun.
+                            <span class="tooltip-help" data-hint="Tuning multiplier for human benefit.">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="chb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
-                    <td colspan="2">Calculated locally</td>
-                    <td colspan="2"><input type="submit" value="Submit" style="padding: 8px 16px; cursor: pointer;"/></td>
+                    <td colspan="2"><a href="Algorithm.pdf" target="_blank" style="color: #0076ff; text-decoration: underline;">Original formula</a> provided by Copiosis</td>
+                    <td colspan="2"><input type="submit" value="Submit" style="padding: 8px 16px; cursor: pointer; font-weight: bold;"/></td>
                 </tr>
             </table>
         </div>
@@ -110,13 +255,35 @@
 
 <script src="store.js"></script>
 <script>
+    function showLoading() {
+        document.getElementById('loader-overlay').style.display = 'flex';
+        document.querySelector('.main-content').style.opacity = '0.3';
+    }
+
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.href && !this.href.startsWith('javascript') && this.target !== '_blank' && !this.href.endsWith('.pdf')) {
+                showLoading();
+            }
+        });
+    });
+
     function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = parseInt(urlParams.get('user_id'));
     const productId = parseInt(urlParams.get('product_id'));
 
+    const users = DB.get('users');
+    const products = DB.get('products');
     const userProducts = DB.get('user_products');
+
+    const targetUser = users.find(u => u.id === userId);
+    const targetProduct = products.find(p => p.id === productId);
+
+    if (targetUser) document.getElementById('producer-name').innerText = targetUser.name;
+    if (targetProduct) document.getElementById('product-name').innerText = targetProduct.name;
+
     const existing = userProducts.find(up => up.UserID === userId && up.ProductID === productId);
 
     if (existing) {
@@ -172,6 +339,7 @@
         }
 
         DB.set('user_products', userProducts);
+        showLoading();
         window.location.href = "users.html";
     };
 </script>
