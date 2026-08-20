@@ -50,7 +50,7 @@
     <div class="top-bar-container">
         <a href="index.html" class="brand-title">Open Reward</a>
         <div class="nav-item-dropdown-wrapper">
-            <button class="menu-btn" onclick="toggleNav()" aria-label="Toggle menu">&#9776;</button>
+            <button class="menu-btn" onclick="toggleNav(event)" aria-label="Toggle menu">&#9776;</button>
             <nav id="navMenu" class="dropdown-nav">
                 <a href="users.html">Show users</a>
                 <a href="products.html">Show products</a>
@@ -65,7 +65,7 @@
 
 <div class="main-content">
     <div class="detail-header">
-        <h2 style="margin: 0;">Transaction Details</h2>
+        <h2 style="margin: 0;">View Transaction</h2>
         <div><b>Date Created:</b> <span id="date-created"></span></div>
     </div>
 
@@ -93,13 +93,24 @@
 
     document.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', function(e) {
-            if (this.href && !this.href.startsWith('javascript')) {
+            if (this.href && !this.href.startsWith('javascript') && this.target !== '_blank') {
                 showLoading();
             }
         });
     });
 
-    function toggleNav() { document.getElementById('navMenu').classList.toggle('open'); }
+    function toggleNav(e) { 
+        if (e) e.stopPropagation();
+        document.getElementById('navMenu').classList.toggle('open'); 
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.nav-item-dropdown-wrapper');
+        const navMenu = document.getElementById('navMenu');
+        if (wrapper && !wrapper.contains(e.target)) {
+            navMenu.classList.remove('open');
+        }
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
     const transferId = parseInt(urlParams.get('id'));
