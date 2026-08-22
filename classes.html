@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Open Reward - Classes</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #fcfcfc; color: #222; text-align: center; }
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; }
+        .top-bar-container { max-width: 1100px; width: 100%; height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; box-sizing: border-box; }
+        .brand-title { font-size: 20px; font-weight: bold; color: #222; text-decoration: none; }
+        .nav-item-dropdown-wrapper { position: relative; display: inline-block; }
+        .menu-btn { background: none; border: none; font-size: 28px; color: #000; cursor: pointer; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 12px; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 16px; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 220px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 1001; text-align: left; }
+        .dropdown-nav.open { display: flex; }
+        .dropdown-nav a { text-decoration: none; color: #000; font-weight: 600; }
+        .main-content { max-width: 900px; margin: 90px auto 0 auto; padding: 16px; }
+        .table-container { overflow-x: auto; margin: 0 auto 16px auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; background: #fff; }
+        table, th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: center; }
+        th { background: #f0f0f0; }
+        .op-actions { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+        .op-actions button { width: 100%; max-width: 120px; padding: 6px 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        #loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner { width: 48px; height: 48px; border: 5px solid #ccc; border-top: 5px solid #000; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div id="loader-overlay"><div class="spinner"></div></div>
+
+<header class="top-bar">
+    <div class="top-bar-container">
+        <a href="index.html" class="brand-title">Open Reward</a>
+        <div class="nav-item-dropdown-wrapper">
+            <button class="menu-btn" onclick="toggleNav(event)" aria-label="Toggle menu">&#9776;</button>
+            <nav id="navMenu" class="dropdown-nav">
+                <a href="users.html">Show users</a>
+                <a href="products.html">Show products</a>
+                <a href="classes.html"><b>Show classes</b></a>
+                <a href="transfers.html">Show transactions</a>
+                <a href="adduser.html">Add user</a>
+                <a href="product.html">Add product</a>
+                <a href="addclass.html">Add class</a>
+                <a href="transfer.html">Create transaction</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<div class="main-content">
+    <h3>Showing all classes</h3>
+    <div style="margin-bottom: 16px;">
+        <button onclick="window.location.href='addclass.html'" style="padding: 8px 16px; font-weight: bold; cursor: pointer;">+ Create New Class</button>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Class Name</th>
+                    <th>Sugg. Gateway</th>
+                    <th>Created</th>
+                    <th>Operation</th>
+                </tr>
+            </thead>
+            <tbody id="classes-tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="store.js"></script>
+<script>
+    function showLoading() { document.getElementById('loader-overlay').style.display = 'flex'; }
+    function toggleNav(e) { if (e) e.stopPropagation(); document.getElementById('navMenu').classList.toggle('open'); }
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.nav-item-dropdown-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) document.getElementById('navMenu').classList.remove('open');
+    });
+
+    function renderClasses() {
+        const classes = DB.get('classes') || [];
+        const tbody = document.getElementById('classes-tbody');
+        tbody.innerHTML = classes.map(c => `
+            <tr>
+                <td>${c.id}</td>
+                <td>${c.name}</td>
+                <td>${c.suggestedGateway}</td>
+                <td>${c.time_created}</td>
+                <td>
+                    <div class="op-actions">
+                        <button onclick="window.location.href='addclass.html?id=${c.id}'">Edit class</button>
+                        <button onclick="deleteClass(${c.id})">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function deleteClass(id) {
+        let classes = DB.get('classes') || [];
+        if (classes.length <= 1) return alert("Cannot delete the last remaining class.");
+        if (!confirm("Are you sure you want to delete this class? Products mapped to this class will revert to Default.")) return;
+        
+        classes = classes.filter(c => c.id !== id);
+        DB.set('classes', classes);
+        
+        // Revert products mapped to deleted class
+        let products = DB.get('products') || [];
+        products.forEach(p => { if (p.class_id === id) p.class_id = 1; });
+        DB.set('products', products);
+        
+        renderClasses();
+    }
+
+    renderClasses();
+</script>
+</body>
+</html>

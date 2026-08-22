@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Reward - Manage Class</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #fcfcfc; color: #222; text-align: center; }
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; }
+        .top-bar-container { max-width: 1100px; width: 100%; height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; box-sizing: border-box; }
+        .brand-title { font-size: 20px; font-weight: bold; color: #222; text-decoration: none; }
+        .nav-item-dropdown-wrapper { position: relative; display: inline-block; }
+        .menu-btn { background: none; border: none; font-size: 28px; color: #000; cursor: pointer; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 12px; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 16px; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 220px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 1001; text-align: left; }
+        .dropdown-nav.open { display: flex; }
+        .dropdown-nav a { text-decoration: none; color: #000; font-weight: 600; }
+        .main-content { max-width: 600px; margin: 90px auto 30px auto; padding: 24px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .table-container { overflow: visible; margin: 0 auto; }
+        table { width: 100%; min-width: 480px; border-collapse: collapse; margin: 0 auto; background: #fff; }
+        td, th { padding: 8px 4px; text-align: center; vertical-align: middle; }
+        input[type="text"], input[type="number"] { width: 100%; box-sizing: border-box; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+        input[type="range"] { width: 100%; margin: 0; box-sizing: border-box; }
+        #loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner { width: 48px; height: 48px; border: 5px solid #ccc; border-top: 5px solid #000; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div id="loader-overlay"><div class="spinner"></div></div>
+
+<header class="top-bar">
+    <div class="top-bar-container">
+        <a href="index.html" class="brand-title">Open Reward</a>
+        <div class="nav-item-dropdown-wrapper">
+            <button class="menu-btn" onclick="toggleNav(event)" aria-label="Toggle menu">&#9776;</button>
+            <nav id="navMenu" class="dropdown-nav">
+                <a href="users.html">Show users</a>
+                <a href="products.html">Show products</a>
+                <a href="classes.html">Show classes</a>
+                <a href="transfers.html">Show transactions</a>
+                <a href="adduser.html">Add user</a>
+                <a href="product.html">Add product</a>
+                <a href="addclass.html"><b>Add class</b></a>
+                <a href="transfer.html">Create transaction</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<div class="main-content">
+    <h3 id="form-title">Create A Class</h3>
+    <form id="classForm">
+        <div style="margin-bottom: 16px; text-align: left;">
+            <label for="name"><b>Class Name:</b></label>
+            <input type="text" id="name" required placeholder="Enter unique class name..." style="margin-top: 4px;"/>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <tr>
+                    <td><label for="suggestedGateway">Suggested Gateway</label></td>
+                    <td>0</td><td><input type="number" id="suggestedGateway" value="0" min="0" required /></td><td>&infin;</td>
+                </tr>
+                <tr><td colspan="4"><hr></td></tr>
+                <tr>
+                    <td><label for="resabundance">Resource Abundance</label></td>
+                    <td>0</td><td><input type="number" id="resabundance" min="0" step="0.01" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr>
+                    <td><label for="beneficiaries">Beneficiaries</label></td>
+                    <td>0</td><td><input type="number" id="beneficiaries" min="0" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr>
+                    <td><label for="producers">Producers</label></td>
+                    <td>0</td><td><input type="number" id="producers" min="0" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr><td colspan="4"><hr></td></tr>
+                <tr>
+                    <td><label for="conssubben">Consumer Subj. Benefit</label></td>
+                    <td style="font-size: 18px;">😠</td><td><input type="range" id="conssubben" min="-2" max="2" step="1" value="0" required /></td><td style="font-size: 18px;">😊</td>
+                </tr>
+                <tr>
+                    <td><label for="ccs">Consumer Subj. Tun.</label></td>
+                    <td>0</td><td><input type="number" id="ccs" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr>
+                    <td><label for="consobjben">Consumer Obj. Benefit</label></td>
+                    <td>-100%</td><td><input type="range" id="consobjben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
+                </tr>
+                <tr>
+                    <td><label for="cco">Consumer Obj. Tun.</label></td>
+                    <td>0</td><td><input type="number" id="cco" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr><td colspan="4"><hr></td></tr>
+                <tr>
+                    <td><label for="envben">Environmental Benefit</label></td>
+                    <td>-100%</td><td><input type="range" id="envben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
+                </tr>
+                <tr>
+                    <td><label for="ceb">Environmental Tun.</label></td>
+                    <td>0</td><td><input type="number" id="ceb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr>
+                    <td><label for="humanben">Human Benefit</label></td>
+                    <td>-100%</td><td><input type="range" id="humanben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
+                </tr>
+                <tr>
+                    <td><label for="chb">Human Tun.</label></td>
+                    <td>0</td><td><input type="number" id="chb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
+                </tr>
+                <tr><td colspan="4"><hr></td></tr>
+                <tr>
+                    <td colspan="4"><input type="submit" value="Submit Class" style="padding: 10px; cursor: pointer; font-weight: bold; width: 100%;"/></td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script src="store.js"></script>
+<script>
+    function showLoading() { document.getElementById('loader-overlay').style.display = 'flex'; }
+    function toggleNav(e) { if (e) e.stopPropagation(); document.getElementById('navMenu').classList.toggle('open'); }
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.nav-item-dropdown-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) document.getElementById('navMenu').classList.remove('open');
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = parseInt(urlParams.get('id'));
+    const classes = DB.get('classes') || [];
+    const fields = ['suggestedGateway', 'resabundance', 'beneficiaries', 'producers', 'ccs', 'conssubben', 'cco', 'consobjben', 'ceb', 'envben', 'chb', 'humanben'];
+
+    if (classId) {
+        document.getElementById('form-title').innerText = "Edit A Class";
+        const c = classes.find(item => item.id === classId);
+        if (c) {
+            document.getElementById('name').value = c.name;
+            fields.forEach(f => { if (document.getElementById(f)) document.getElementById(f).value = c[f]; });
+        }
+    }
+
+    document.getElementById('classForm').onsubmit = function(e) {
+        e.preventDefault();
+        const nameInput = document.getElementById('name').value.trim();
+
+        const exists = classes.some(c => c.id !== classId && c.name.toLowerCase() === nameInput.toLowerCase());
+        if (exists) return alert("A class with this name already exists.");
+
+        const classData = {
+            id: classId || (classes.reduce((max, c) => (c.id > max ? c.id : max), 0) + 1),
+            name: nameInput,
+            time_created: new Date().toLocaleString()
+        };
+
+        fields.forEach(f => {
+            classData[f] = parseFloat(document.getElementById(f).value);
+        });
+
+        if (classId) {
+            const idx = classes.findIndex(c => c.id === classId);
+            classes[idx] = classData;
+
+            // --- CASCADING AUTO-UPDATE FOR USER PRODUCTS ---
+            let products = DB.get('products') || [];
+            let userProducts = DB.get('user_products') || [];
+
+            // Find all products assigned to this class
+            const matchingProductIds = products
+                .filter(p => p.class_id === classId)
+                .map(p => p.id);
+
+            // Cascade updated values and recalculate benefits
+            userProducts.forEach(up => {
+                if (matchingProductIds.includes(up.ProductID)) {
+                    up.gateway = classData.suggestedGateway;
+                    up.resabundance = classData.resabundance;
+                    up.beneficiaries = classData.beneficiaries;
+                    up.producers = classData.producers;
+                    up.ccs = classData.ccs;
+                    up.conssubben = classData.conssubben;
+                    up.cco = classData.cco;
+                    up.consobjben = classData.consobjben;
+                    up.ceb = classData.ceb;
+                    up.envben = classData.envben;
+                    up.chb = classData.chb;
+                    up.humanben = classData.humanben;
+
+                    const rawBenefit = up.resabundance * Math.log(1.0 + (up.beneficiaries / up.producers)) * 
+                        ((up.ccs * up.conssubben) + (up.cco * up.consobjben) + (up.ceb * up.envben) + (up.chb * up.humanben));
+                    up.benefit = Math.max(0, Math.ceil(rawBenefit));
+                }
+            });
+
+            DB.set('user_products', userProducts);
+        } else {
+            classes.push(classData);
+        }
+
+        DB.set('classes', classes);
+        showLoading();
+        window.location.href = 'classes.html';
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Reward - Edit Product for User</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #fcfcfc; color: #222; text-align: center; }
+        
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; }
+        .top-bar-container { max-width: 1100px; width: 100%; height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; position: relative; padding: 0 16px; box-sizing: border-box; }
+        
+        .brand-title { font-size: 20px; font-weight: bold; color: #222; text-decoration: none; line-height: 1; }
+        
+        .nav-item-dropdown-wrapper { position: relative; display: inline-block; }
+        .menu-btn { background: none; border: none; font-size: 28px; color: #000000; cursor: pointer; padding: 4px; line-height: 1; display: block; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 12px; background: #ffffff; border: 1px solid #ccc; border-radius: 8px; padding: 16px; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 220px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 1001; text-align: left; box-sizing: border-box; }
+        .dropdown-nav.open { display: flex; }
+        .dropdown-nav a { text-decoration: none; color: #000000; font-weight: 600; font-size: 16px; }
+        
+        .main-content { max-width: 600px; margin: 90px auto 30px auto; padding: 24px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box; }
+        .form-group { margin: 16px auto; display: flex; flex-direction: column; gap: 6px; max-width: 450px; align-items: flex-start; text-align: left; }
+        .radio-group { display: flex; gap: 16px; align-items: center; margin-top: 4px; }
+        .radio-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: normal; }
+
+        input[type="text"], input[type="number"], select, textarea, button, input[type="submit"] { 
+            padding: 8px 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; 
+        }
+        textarea { resize: vertical; min-height: 70px; }
+
+        .config-header { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 16px; text-align: left; }
+        .config-header-row { display: flex; gap: 8px; font-size: 16px; margin-bottom: 6px; }
+        .config-header-label { font-weight: bold; min-width: 90px; }
+
+        /* Loader Overlay */
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.7); display: none;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .spinner {
+            width: 48px; height: 48px; border: 5px solid #ccc;
+            border-top: 5px solid #000; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="loader-overlay"><div class="spinner"></div></div>
+
+<header class="top-bar">
+    <div class="top-bar-container">
+        <a href="index.html" class="brand-title">Open Reward</a>
+        <div class="nav-item-dropdown-wrapper">
+            <button class="menu-btn" onclick="toggleNav(event)" aria-label="Toggle menu">&#9776;</button>
+            <nav id="navMenu" class="dropdown-nav">
+                <a href="users.html">Show users</a>
+                <a href="products.html">Show products</a>
+                <a href="classes.html">Show classes</a>
+                <a href="transfers.html">Show transactions</a>
+                <a href="adduser.html">Add user</a>
+                <a href="product.html">Add product</a>
+                <a href="addclass.html">Add class</a>
+                <a href="transfer.html">Create transaction</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<div class="main-content">
+    <h3 style="margin-top: 0;">Edit User Product</h3>
+
+    <div class="config-header">
+        <div class="config-header-row"><span class="config-header-label">Member:</span> <span id="producer-name">...</span></div>
+        <div class="config-header-row"><span class="config-header-label">Product:</span> <span id="product-name">...</span></div>
+    </div>
+    
+    <form id="editUserProductForm">
+        <div class="form-group">
+            <label for="class_id"><b>Item Class:</b></label>
+            <select id="class_id" required onchange="updateSuggestedGateway()"></select>
+        </div>
+
+        <div class="form-group">
+            <label><b>Item Type:</b></label>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="item_type" value="Product" id="type-product" /> Product
+                </label>
+                <label>
+                    <input type="radio" name="item_type" value="Service" id="type-service" /> Service
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="name"><b>Item Name:</b></label>
+            <input type="text" id="name" required placeholder="Item Name..."/>
+        </div>
+
+        <div class="form-group">
+            <label for="description"><b>Description:</b></label>
+            <textarea id="description" placeholder="Provide an in-depth description of your item..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="gateway"><b>Gateway:</b></label>
+            <input type="number" id="gateway" min="0" value="0" required placeholder="Gateway..."/>
+        </div>
+
+        <div style="max-width: 450px; margin: 24px auto 0 auto;">
+            <input type="submit" value="Submit Changes" style="cursor: pointer; font-weight: bold; padding: 10px;"/>
+        </div>
+    </form>
+</div>
+
+<script src="store.js"></script>
+<script>
+    function showLoading() {
+        document.getElementById('loader-overlay').style.display = 'flex';
+        document.querySelector('.main-content').style.opacity = '0.3';
+    }
+
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.href && !this.href.startsWith('javascript') && this.target !== '_blank') {
+                showLoading();
+            }
+        });
+    });
+
+    function toggleNav(e) { 
+        if (e) e.stopPropagation();
+        document.getElementById('navMenu').classList.toggle('open'); 
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrapper = document.querySelector('.nav-item-dropdown-wrapper');
+        const navMenu = document.getElementById('navMenu');
+        if (wrapper && !wrapper.contains(e.target)) {
+            navMenu.classList.remove('open');
+        }
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = parseInt(urlParams.get('user_id'));
+    const productId = parseInt(urlParams.get('product_id'));
+
+    const users = DB.get('users');
+    const products = DB.get('products');
+    const userProducts = DB.get('user_products');
+    const classes = DB.get('classes') || [];
+
+    const targetUser = users.find(u => u.id === userId);
+    const targetProduct = products.find(p => p.id === productId);
+    const existingUP = userProducts.find(up => up.UserID === userId && up.ProductID === productId);
+
+    if (targetUser) document.getElementById('producer-name').innerText = targetUser.name;
+    if (targetProduct) document.getElementById('product-name').innerText = targetProduct.name;
+
+    const classSelect = document.getElementById('class_id');
+    const nameInput = document.getElementById('name');
+    const descriptionInput = document.getElementById('description');
+    const gatewayInput = document.getElementById('gateway');
+
+    // Populate classes
+    classSelect.innerHTML = classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+    // Pre-populate existing fields
+    if (targetProduct) {
+        nameInput.value = targetProduct.name;
+        descriptionInput.value = targetProduct.description || '';
+        classSelect.value = targetProduct.class_id || 1;
+        
+        if (targetProduct.type === 'Service') {
+            document.getElementById('type-service').checked = true;
+        } else {
+            document.getElementById('type-product').checked = true;
+        }
+    }
+
+    if (existingUP) {
+        gatewayInput.value = existingUP.gateway;
+    }
+
+    function updateSuggestedGateway() {
+        const selectedId = parseInt(classSelect.value);
+        const selectedClass = classes.find(c => c.id === selectedId);
+        if (selectedClass && typeof selectedClass.suggestedGateway !== 'undefined') {
+            gatewayInput.value = selectedClass.suggestedGateway;
+        }
+    }
+
+    document.getElementById('editUserProductForm').onsubmit = function(e) {
+        e.preventDefault();
+        const newName = nameInput.value.trim();
+        const newDescription = descriptionInput.value.trim();
+        const itemType = document.querySelector('input[name="item_type"]:checked').value;
+        const newClassId = parseInt(classSelect.value);
+        const newGateway = parseFloat(gatewayInput.value);
+
+        const isNameChanged = targetProduct && (newName.toLowerCase() !== targetProduct.name.toLowerCase());
+
+        let targetProductIdForUser = productId;
+
+        if (isNameChanged) {
+            // Check if name already exists globally
+            const exists = products.some(p => p.name.toLowerCase() === newName.toLowerCase());
+            if (exists) {
+                alert("A product with this name already exists.");
+                return;
+            }
+
+            // Create new Product entry
+            const maxId = products.reduce((max, p) => (p.id > max ? p.id : max), 0);
+            targetProductIdForUser = maxId + 1;
+            const creationTime = new Date().toLocaleString();
+
+            products.push({
+                id: targetProductIdForUser,
+                name: newName,
+                description: newDescription,
+                type: itemType,
+                class_id: newClassId,
+                gateway: newGateway,
+                benefit: 0,
+                time_created: creationTime
+            });
+
+            // Re-bind user product assignment to new product ID
+            if (existingUP) {
+                existingUP.ProductID = targetProductIdForUser;
+            }
+        } else if (targetProduct) {
+            // Update existing Product in place
+            targetProduct.name = newName;
+            targetProduct.description = newDescription;
+            targetProduct.type = itemType;
+            targetProduct.class_id = newClassId;
+            targetProduct.gateway = newGateway;
+        }
+
+        // Apply updated class variables and recalculate benefit
+        const selectedClass = classes.find(c => c.id === newClassId) || classes[0];
+
+        const resabundance = selectedClass.resabundance ?? 1;
+        const beneficiaries = selectedClass.beneficiaries ?? 1;
+        const producers = selectedClass.producers ?? 1;
+        const ccs = selectedClass.ccs ?? 1;
+        const conssubben = selectedClass.conssubben ?? 0;
+        const cco = selectedClass.cco ?? 1;
+        const consobjben = selectedClass.consobjben ?? 0;
+        const ceb = selectedClass.ceb ?? 1;
+        const envben = selectedClass.envben ?? 0;
+        const chb = selectedClass.chb ?? 1;
+        const humanben = selectedClass.humanben ?? 0;
+
+        const rawBenefit = resabundance * Math.log(1.0 + (beneficiaries / producers)) * ((ccs * conssubben) + (cco * consobjben) + (ceb * envben) + (chb * humanben));
+        const benefitVal = Math.max(0, Math.ceil(rawBenefit));
+
+        if (existingUP) {
+            existingUP.gateway = newGateway;
+            existingUP.benefit = benefitVal;
+            existingUP.resabundance = resabundance;
+            existingUP.beneficiaries = beneficiaries;
+            existingUP.producers = producers;
+            existingUP.ccs = ccs;
+            existingUP.conssubben = conssubben;
+            existingUP.cco = cco;
+            existingUP.consobjben = consobjben;
+            existingUP.ceb = ceb;
+            existingUP.envben = envben;
+            existingUP.chb = chb;
+            existingUP.humanben = humanben;
+        }
+
+        DB.set('products', products);
+        DB.set('user_products', userProducts);
+
+        showLoading();
+        window.location.href = `products.html?producers_of=${targetProductIdForUser}`;
+    };
+</script>
+</body>
+</html>
