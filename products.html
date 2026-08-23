@@ -56,9 +56,11 @@
             <nav id="navMenu" class="dropdown-nav">
                 <a href="users.html">Show users</a>
                 <a href="products.html"><b>Show products</b></a>
+                <a href="classes.html">Show classes</a>
                 <a href="transfers.html">Show transactions</a>
                 <a href="adduser.html">Add user</a>
                 <a href="product.html">Add product</a>
+                <a href="addclass.html">Add class</a>
                 <a href="transfer.html">Create transaction</a>
             </nav>
         </div>
@@ -168,6 +170,7 @@
                     <td>${up.time_created}</td>
                     <td>
                         <div class="op-actions">
+                            <button onclick="editProductForUser(${up.UserID}, ${up.ProductID})">Edit Product</button>
                             <button onclick="editProducerValues(${up.UserID}, ${up.ProductID})">Edit Values</button>
                             <button onclick="deleteProducerAssignment(${up.UserID}, ${up.ProductID})">Delete</button>
                         </div>
@@ -213,6 +216,11 @@
         prod.name = trimmed;
         DB.set('products', products);
         renderTable();
+    }
+
+    function editProductForUser(userId, productId) {
+        showLoading();
+        window.location.href = `edituserproduct.html?user_id=${userId}&product_id=${productId}`;
     }
 
     function editProducerValues(userId, productId) {
