@@ -21,8 +21,9 @@
         .main-content { max-width: 600px; margin: 90px auto 30px auto; padding: 24px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box; overflow: visible; }
         
         .config-header { border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 16px; text-align: left; }
-        .config-header-row { display: flex; gap: 8px; font-size: 16px; margin-bottom: 6px; }
+        .config-header-row { display: flex; gap: 8px; font-size: 16px; margin-bottom: 6px; align-items: center; }
         .config-header-label { font-weight: bold; min-width: 90px; }
+        .config-header-row select { padding: 4px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; max-width: 250px; }
 
         .table-container { overflow: visible; margin: 0 auto; }
         table { width: 100%; min-width: 480px; border-collapse: collapse; margin: 0 auto; background: #fff; }
@@ -111,9 +112,11 @@
             <nav id="navMenu" class="dropdown-nav">
                 <a href="users.html">Show users</a>
                 <a href="products.html">Show products</a>
+                <a href="classes.html">Show classes</a>
                 <a href="transfers.html">Show transactions</a>
                 <a href="adduser.html">Add user</a>
                 <a href="product.html"><b>Add product</b></a>
+                <a href="addclass.html">Add class</a>
                 <a href="transfer.html">Create transaction</a>
             </nav>
         </div>
@@ -124,6 +127,10 @@
     <div class="config-header">
         <div class="config-header-row"><span class="config-header-label">Producer:</span> <span id="producer-name">...</span></div>
         <div class="config-header-row"><span class="config-header-label">Product:</span> <span id="product-name">...</span></div>
+        <div class="config-header-row">
+            <span class="config-header-label">Class:</span> 
+            <select id="class-select" onchange="applyClassVariables()"></select>
+        </div>
     </div>
 
     <form id="productConfigForm">
@@ -174,7 +181,7 @@
                             <span class="tooltip-help" data-hint="What are the subjective benefits, i.e. how much does the consumer like what they consumed?">?</span>
                         </label>
                     </td>
-                    <td style="font-size: 18px;">😠</td><td><input type="range" id="conssubben" min="-2" max="2" step="1" value="0" required /></td><td style="font-size: 18px;">😊</td>
+                    <td style="font-size: 18px;">😠</td><td><input type="range" id="conssubben" min="-1" max="1" step="0.5" value="0" required /></td><td style="font-size: 18px;">😊</td>
                 </tr>
                 <tr>
                     <td>
@@ -285,6 +292,7 @@
     const users = DB.get('users');
     const products = DB.get('products');
     const userProducts = DB.get('user_products');
+    const classes = DB.get('classes') || [];
 
     const targetUser = users.find(u => u.id === userId);
     const targetProduct = products.find(p => p.id === productId);
@@ -292,13 +300,60 @@
     if (targetUser) document.getElementById('producer-name').innerText = targetUser.name;
     if (targetProduct) document.getElementById('product-name').innerText = targetProduct.name;
 
+    const classSelect = document.getElementById('class-select');
+
+    // Baseline default algorithm variables
+    const defaultTemplate = {
+        suggestedGateway: 0,
+        resabundance: 1,
+        beneficiaries: 1,
+        producers: 1,
+        ccs: 1,
+        conssubben: 0,
+        cco: 1,
+        consobjben: 0,
+        ceb: 1,
+        envben: 0,
+        chb: 1,
+        humanben: 0
+    };
+
+    // Populate dropdown with "Default" at the top followed by user classes
+    classSelect.innerHTML = `<option value="0">Default</option>` + 
+        classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+    // Pre-select target product's class if assigned
+    if (targetProduct && targetProduct.class_id) {
+        classSelect.value = targetProduct.class_id;
+    } else {
+        classSelect.value = "0";
+    }
+
+    const fields = ['gateway', 'resabundance', 'beneficiaries', 'producers', 'ccs', 'conssubben', 'cco', 'consobjben', 'ceb', 'envben', 'chb', 'humanben'];
     const existing = userProducts.find(up => up.UserID === userId && up.ProductID === productId);
 
-    if (existing) {
-        ['gateway', 'resabundance', 'beneficiaries', 'producers', 'ccs', 'conssubben', 'cco', 'consobjben', 'ceb', 'envben', 'chb', 'humanben'].forEach(field => {
-            if (document.getElementById(field)) document.getElementById(field).value = existing[field];
+    function applyClassVariables() {
+        const selectedId = parseInt(classSelect.value);
+        let selectedTemplate = defaultTemplate;
+
+        if (selectedId !== 0) {
+            const foundClass = classes.find(c => c.id === selectedId);
+            if (foundClass) selectedTemplate = foundClass;
+        }
+
+        fields.forEach(field => {
+            const input = document.getElementById(field);
+            if (input) {
+                const valKey = field === 'gateway' ? 'suggestedGateway' : field;
+                if (typeof selectedTemplate[valKey] !== 'undefined') {
+                    input.value = selectedTemplate[valKey];
+                }
+            }
         });
     }
+
+    // Always re-apply live Class variables on load to capture recent Class edits
+    applyClassVariables();
 
     document.getElementById('productConfigForm').onsubmit = function(e) {
         e.preventDefault();
