@@ -29,6 +29,7 @@
         table { width: 100%; min-width: 480px; border-collapse: collapse; margin: 0 auto; background: #fff; }
         td, th { padding: 8px 4px; text-align: center; vertical-align: middle; position: relative; }
         input[type="number"] { width: 100%; box-sizing: border-box; padding: 6px; }
+        input[readonly] { background-color: #f0f0f0; color: #666; cursor: not-allowed; border: 1px solid #ddd; }
 
         input[type="range"] {
             width: 100%;
@@ -139,7 +140,7 @@
                 <tr>
                     <td>
                         <label for="gateway">
-                            gateway
+                            Gateway
                             <span class="tooltip-help tooltip-down" data-hint="Credit required by the consumer to access this product.">?</span>
                         </label>
                     </td>
@@ -149,7 +150,7 @@
                 <tr>
                     <td>
                         <label for="resabundance">
-                            resource abundance
+                            Resource Abundance
                             <span class="tooltip-help" data-hint="Regarding a given act that produced the result we're measuring, what kind of resources were used in creating the result and how abundant/renewable are they?">?</span>
                         </label>
                     </td>
@@ -158,7 +159,7 @@
                 <tr>
                     <td>
                         <label for="beneficiaries">
-                            number of beneficiaries
+                            Number of Beneficiaries
                             <span class="tooltip-help" data-hint="How many people want what the producer is producing?">?</span>
                         </label>
                     </td>
@@ -167,17 +168,25 @@
                 <tr>
                     <td>
                         <label for="producers">
-                            number of producers
+                            Number of Producers
                             <span class="tooltip-help" data-hint="How many other people are doing what this one producer is doing?">?</span>
                         </label>
                     </td>
                     <td>0</td><td><input type="number" id="producers" min="0" value="1" required /></td><td>&infin;</td>
                 </tr>
+                <tr>
+                    <td colspan="4" style="padding: 12px 0;">
+                        <label style="cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <input type="checkbox" id="sync-ledger-toggle" checked onchange="toggleLedgerSync()" />
+                            Auto-sync number of beneficiaries and producers from transfers ledger
+                        </label>
+                    </td>
+                </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
                     <td>
                         <label for="conssubben">
-                            consumer subjective benefit
+                            Consumer Subjective Benefit
                             <span class="tooltip-help" data-hint="What are the subjective benefits, i.e. how much does the consumer like what they consumed?">?</span>
                         </label>
                     </td>
@@ -186,7 +195,7 @@
                 <tr>
                     <td>
                         <label for="ccs">
-                            consumer subj. benefit tun.
+                            Consumer Subj. Benefit Tun.
                             <span class="tooltip-help" data-hint="Tuning multiplier for consumer subjective benefit.">?</span>
                         </label>
                     </td>
@@ -195,7 +204,7 @@
                 <tr>
                     <td>
                         <label for="consobjben">
-                            consumer objective benefit
+                            Consumer Objective Benefit
                             <span class="tooltip-help" data-hint="What are the (objective) benefits to the consumer when the consumer consumes what the producer is producing?">?</span>
                         </label>
                     </td>
@@ -204,7 +213,7 @@
                 <tr>
                     <td>
                         <label for="cco">
-                            consumer objective benefit tun.
+                            Consumer Obj. Benefit Tun.
                             <span class="tooltip-help" data-hint="Tuning multiplier for consumer objective benefit.">?</span>
                         </label>
                     </td>
@@ -214,7 +223,7 @@
                 <tr>
                     <td>
                         <label for="envben">
-                            environmental benefit
+                            Environmental Benefit
                             <span class="tooltip-help" data-hint="What are the environmental impacts of the act?">?</span>
                         </label>
                     </td>
@@ -223,7 +232,7 @@
                 <tr>
                     <td>
                         <label for="ceb">
-                            environmental benefit tun.
+                            Environmental Benefit Tun.
                             <span class="tooltip-help" data-hint="Tuning multiplier for environmental benefit.">?</span>
                         </label>
                     </td>
@@ -232,7 +241,7 @@
                 <tr>
                     <td>
                         <label for="humanben">
-                            human benefit
+                            Human Benefit
                             <span class="tooltip-help" data-hint="How resilient does the act/result make humanity? Also, how big of an area does the act benefit?">?</span>
                         </label>
                     </td>
@@ -241,7 +250,7 @@
                 <tr>
                     <td>
                         <label for="chb">
-                            human benefit tun.
+                            Human Benefit Tun.
                             <span class="tooltip-help" data-hint="Tuning multiplier for human benefit.">?</span>
                         </label>
                     </td>
@@ -292,6 +301,7 @@
     const users = DB.get('users');
     const products = DB.get('products');
     const userProducts = DB.get('user_products');
+    const transfers = DB.get('transfers') || [];
     const classes = DB.get('classes') || [];
 
     const targetUser = users.find(u => u.id === userId);
@@ -301,8 +311,15 @@
     if (targetProduct) document.getElementById('product-name').innerText = targetProduct.name;
 
     const classSelect = document.getElementById('class-select');
+    const syncToggle = document.getElementById('sync-ledger-toggle');
+    const beneficiariesInput = document.getElementById('beneficiaries');
+    const producersInput = document.getElementById('producers');
 
-    // Baseline default algorithm variables
+    // Detect unique counts from transfers ledger
+    const matchingTransfers = transfers.filter(t => t.ProductID === productId);
+    const uniqueProducersCount = Math.max(1, new Set(matchingTransfers.map(t => t.ProducerID)).size);
+    const uniqueConsumersCount = Math.max(1, new Set(matchingTransfers.map(t => t.ConsumerID)).size);
+
     const defaultTemplate = {
         suggestedGateway: 0,
         resabundance: 1,
@@ -318,11 +335,13 @@
         humanben: 0
     };
 
-    // Populate dropdown with "Default" at the top followed by user classes
-    classSelect.innerHTML = `<option value="0">Default</option>` + 
-        classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    function populateClassDropdown() {
+        classSelect.innerHTML = `<option value="0">Default</option>` + 
+            `<option value="custom">Custom</option>` +
+            classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+    populateClassDropdown();
 
-    // Pre-select target product's class if assigned
     if (targetProduct && targetProduct.class_id) {
         classSelect.value = targetProduct.class_id;
     } else {
@@ -333,7 +352,10 @@
     const existing = userProducts.find(up => up.UserID === userId && up.ProductID === productId);
 
     function applyClassVariables() {
-        const selectedId = parseInt(classSelect.value);
+        const selectedVal = classSelect.value;
+        if (selectedVal === 'custom') return;
+
+        const selectedId = parseInt(selectedVal);
         let selectedTemplate = defaultTemplate;
 
         if (selectedId !== 0) {
@@ -342,6 +364,8 @@
         }
 
         fields.forEach(field => {
+            if (syncToggle.checked && (field === 'producers' || field === 'beneficiaries')) return;
+
             const input = document.getElementById(field);
             if (input) {
                 const valKey = field === 'gateway' ? 'suggestedGateway' : field;
@@ -352,8 +376,34 @@
         });
     }
 
-    // Always re-apply live Class variables on load to capture recent Class edits
+    function toggleLedgerSync() {
+        if (syncToggle.checked) {
+            producersInput.value = uniqueProducersCount;
+            beneficiariesInput.value = uniqueConsumersCount;
+            producersInput.readOnly = true;
+            beneficiariesInput.readOnly = true;
+        } else {
+            producersInput.readOnly = false;
+            beneficiariesInput.readOnly = false;
+            applyClassVariables();
+        }
+    }
+
+    // Set initial values and read-only states
     applyClassVariables();
+    toggleLedgerSync();
+
+    // Bind custom option detection on user input
+    fields.forEach(field => {
+        if (field === 'gateway') return;
+        const elem = document.getElementById(field);
+        if (elem) {
+            elem.addEventListener('input', function() {
+                if (syncToggle.checked && (field === 'producers' || field === 'beneficiaries')) return;
+                classSelect.value = 'custom';
+            });
+        }
+    });
 
     document.getElementById('productConfigForm').onsubmit = function(e) {
         e.preventDefault();
@@ -361,8 +411,8 @@
         if (gateway < 0) return alert("Gateway must never be negative!");
 
         const resabundance = parseFloat(document.getElementById('resabundance').value);
-        const beneficiaries = parseFloat(document.getElementById('beneficiaries').value);
-        const producers = parseFloat(document.getElementById('producers').value);
+        const beneficiaries = parseFloat(beneficiariesInput.value);
+        const producers = parseFloat(producersInput.value);
         const ccs = parseFloat(document.getElementById('ccs').value);
         const conssubben = parseFloat(document.getElementById('conssubben').value);
         const cco = parseFloat(document.getElementById('cco').value);
@@ -402,9 +452,10 @@
         }
 
         DB.set('user_products', userProducts);
+        alert('User product configuration saved successfully!');
         showLoading();
         window.location.href = `products.html?producers_of=${productId}`;
-    };
+    }
 </script>
 </body>
 </html>
