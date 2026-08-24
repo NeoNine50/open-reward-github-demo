@@ -196,6 +196,7 @@
 
         user.name = trimmed;
         DB.set('users', users);
+        alert('User name updated successfully!');
         renderUsers();
     }
 
@@ -213,7 +214,7 @@
         DB.set('users', users);
         DB.set('user_products', userProducts);
         DB.set('transfers', transfers);
-
+        alert('User deleted successfully!');
         renderUsers();
     }
 
