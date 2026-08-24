@@ -109,7 +109,7 @@
         let products = DB.get('products') || [];
         products.forEach(p => { if (p.class_id === id) p.class_id = 1; });
         DB.set('products', products);
-        
+        alert('Class deleted successfully!');
         renderClasses();
     }
 
