@@ -198,6 +198,7 @@
             transfers = transfers.filter(x => x.id !== id);
             DB.set('users', users);
             DB.set('transfers', transfers);
+            alert('Transaction record deleted successfully!');
             renderTransfers();
         }
     }
