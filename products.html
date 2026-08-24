@@ -239,6 +239,7 @@
 
         DB.set('products', products);
         DB.set('user_products', userProducts);
+        alert('Product deleted successfully!');
         renderTable();
     }
 
@@ -249,6 +250,7 @@
         userProducts = userProducts.filter(up => !(up.UserID === userId && up.ProductID === productId));
 
         DB.set('user_products', userProducts);
+        alert('Producer assignment removed successfully!');
         renderTable();
     }
 
