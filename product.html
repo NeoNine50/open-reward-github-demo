@@ -171,6 +171,13 @@
 
         const userId = parseInt(userSelect.value);
         const classId = parseInt(classSelect.value);
+
+        if (!classId) {
+            alert("No class found. Please create a class and assign it to this product.");
+            window.location.href = "addclass.html";
+            return;
+        }
+
         const nameInput = document.getElementById('name').value.trim();
         const descriptionInput = document.getElementById('description').value.trim();
         const itemType = document.querySelector('input[name="item_type"]:checked').value;
@@ -181,29 +188,41 @@
             return;
         }
 
-        const exists = products.some(p => p.name.toLowerCase() === nameInput.toLowerCase());
-        if (exists) {
-            alert("A product with this name already exists.");
-            return;
+        const creationTime = new Date().toLocaleString();
+        let targetProductId;
+        let isExistingProduct = false;
+
+        // Check if a product with this name already exists
+        const existingProduct = products.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
+
+        if (existingProduct) {
+            // Check if this product is already assigned to this user
+            const isAlreadyAssigned = userProducts.some(up => up.ProductID === existingProduct.id && up.UserID === userId);
+            if (isAlreadyAssigned) {
+                alert("This product already exists and is already assigned to this member.");
+                return;
+            }
+            // Product exists globally, but is NOT assigned to this user
+            targetProductId = existingProduct.id;
+            isExistingProduct = true;
+        } else {
+            // Create New Product Entry
+            const maxId = products.reduce((max, p) => (p.id > max ? p.id : max), 0);
+            targetProductId = maxId + 1;
+
+            products.push({
+                id: targetProductId,
+                name: nameInput,
+                description: descriptionInput,
+                type: itemType,
+                class_id: classId,
+                gateway: gatewayVal,
+                benefit: 0,
+                time_created: creationTime
+            });
         }
 
-        const maxId = products.reduce((max, p) => (p.id > max ? p.id : max), 0);
-        const newId = maxId + 1;
-        const creationTime = new Date().toLocaleString();
-
-        // 1. Create Product Entry
-        products.push({
-            id: newId,
-            name: nameInput,
-            description: descriptionInput,
-            type: itemType,
-            class_id: classId,
-            gateway: gatewayVal,
-            benefit: 0,
-            time_created: creationTime
-        });
-
-        // 2. Fetch selected class variables for defaults
+        // Fetch selected class variables for defaults
         const selectedClass = classes.find(c => c.id === classId) || classes[0];
 
         const resabundance = selectedClass.resabundance ?? 1;
@@ -218,13 +237,13 @@
         const chb = selectedClass.chb ?? 1;
         const humanben = selectedClass.humanben ?? 0;
 
-        // 3. Calculate Benefit
+        // Calculate Benefit
         const rawBenefit = resabundance * Math.log(1.0 + (beneficiaries / producers)) * ((ccs * conssubben) + (cco * consobjben) + (ceb * envben) + (chb * humanben));
         const benefitVal = Math.max(0, Math.ceil(rawBenefit));
 
-        // 4. Create User Product Mapping
+        // Create User Product Mapping
         userProducts.push({
-            ProductID: newId,
+            ProductID: targetProductId,
             UserID: userId,
             gateway: gatewayVal,
             benefit: benefitVal,
@@ -244,9 +263,15 @@
 
         DB.set('products', products);
         DB.set('user_products', userProducts);
-        alert('Product registered successfully!');
+
+        if (isExistingProduct) {
+            alert('Existing product assigned to user successfully!');
+        } else {
+            alert('Product registered and assigned to user successfully!');
+        }
+
         showLoading();
-        window.location.href = `products.html?producers_of=${newId}`;
+        window.location.href = `products.html?producers_of=${targetProductId}`;
     };
 </script>
 </body>
