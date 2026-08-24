@@ -6,26 +6,97 @@
     <title>Open Reward - Manage Class</title>
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #fcfcfc; color: #222; text-align: center; }
+        
         .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; }
-        .top-bar-container { max-width: 1100px; width: 100%; height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; box-sizing: border-box; }
-        .brand-title { font-size: 20px; font-weight: bold; color: #222; text-decoration: none; }
+        .top-bar-container { max-width: 1100px; width: 100%; height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; position: relative; padding: 0 16px; box-sizing: border-box; }
+        
+        .brand-title { font-size: 20px; font-weight: bold; color: #222; text-decoration: none; line-height: 1; }
+        
         .nav-item-dropdown-wrapper { position: relative; display: inline-block; }
-        .menu-btn { background: none; border: none; font-size: 28px; color: #000; cursor: pointer; }
-        .dropdown-nav { display: none; flex-direction: column; gap: 12px; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 16px; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 220px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 1001; text-align: left; }
+        .menu-btn { background: none; border: none; font-size: 28px; color: #000000; cursor: pointer; padding: 4px; line-height: 1; display: block; }
+        .dropdown-nav { display: none; flex-direction: column; gap: 12px; background: #ffffff; border: 1px solid #ccc; border-radius: 8px; padding: 16px; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 220px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 1001; text-align: left; box-sizing: border-box; }
         .dropdown-nav.open { display: flex; }
-        .dropdown-nav a { text-decoration: none; color: #000; font-weight: 600; }
-        .main-content { max-width: 600px; margin: 90px auto 30px auto; padding: 24px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .dropdown-nav a { text-decoration: none; color: #000000; font-weight: 600; font-size: 16px; }
+        
+        .main-content { max-width: 600px; margin: 90px auto 30px auto; padding: 24px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box; overflow: visible; }
+        
         .table-container { overflow: visible; margin: 0 auto; }
         table { width: 100%; min-width: 480px; border-collapse: collapse; margin: 0 auto; background: #fff; }
-        td, th { padding: 8px 4px; text-align: center; vertical-align: middle; }
+        td, th { padding: 8px 4px; text-align: center; vertical-align: middle; position: relative; }
         input[type="text"], input[type="number"] { width: 100%; box-sizing: border-box; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-        input[type="range"] { width: 100%; margin: 0; box-sizing: border-box; }
-        #loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); display: none; justify-content: center; align-items: center; z-index: 9999; }
-        .spinner { width: 48px; height: 48px; border: 5px solid #ccc; border-top: 5px solid #000; border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        .tooltip-help {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-color: #0076ff;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            cursor: pointer;
+            margin-left: 4px;
+            position: relative;
+        }
+
+        .tooltip-help::after {
+            content: attr(data-hint);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: normal;
+            white-space: normal;
+            width: 220px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 2000;
+            pointer-events: none;
+            text-align: left;
+        }
+
+        .tooltip-help.tooltip-down::after {
+            bottom: auto;
+            top: 125%;
+        }
+
+        .tooltip-help:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.7); display: none;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .spinner {
+            width: 48px; height: 48px; border: 5px solid #ccc;
+            border-top: 5px solid #000; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
 <div id="loader-overlay"><div class="spinner"></div></div>
 
 <header class="top-bar">
@@ -48,7 +119,8 @@
 </header>
 
 <div class="main-content">
-    <h3 id="form-title">Create A Class</h3>
+    <h3 id="form-title" style="margin-top: 0; text-align: center;">Create a class</h3>
+
     <form id="classForm">
         <div style="margin-bottom: 16px; text-align: left;">
             <label for="name"><b>Class Name:</b></label>
@@ -58,59 +130,120 @@
         <div class="table-container">
             <table>
                 <tr>
-                    <td><label for="suggestedGateway">Suggested Gateway</label></td>
-                    <td>0</td><td><input type="number" id="suggestedGateway" value="0" min="0" required /></td><td>&infin;</td>
+                    <td>
+                        <label for="suggestedGateway">
+                            Suggested Gateway
+                            <span class="tooltip-help tooltip-down" data-hint="Credit required by the consumer to access this product.">?</span>
+                        </label>
+                    </td>
+                    <td>0</td><td><input type="number" id="suggestedGateway" value="0" min="0" required autofocus /></td><td>&infin;</td>
                 </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
-                    <td><label for="resabundance">Resource Abundance</label></td>
+                    <td>
+                        <label for="resabundance">
+                            Resource Abundance
+                            <span class="tooltip-help" data-hint="Regarding a given act that produced the result we're measuring, what kind of resources were used in creating the result and how abundant/renewable are they?">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="resabundance" min="0" step="0.01" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr>
-                    <td><label for="beneficiaries">Beneficiaries</label></td>
+                    <td>
+                        <label for="beneficiaries">
+                            Number of Beneficiaries
+                            <span class="tooltip-help" data-hint="How many people want what the producer is producing?">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="beneficiaries" min="0" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr>
-                    <td><label for="producers">Producers</label></td>
+                    <td>
+                        <label for="producers">
+                            Number of Producers
+                            <span class="tooltip-help" data-hint="How many other people are doing what this one producer is doing?">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="producers" min="0" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
-                    <td><label for="conssubben">Consumer Subj. Benefit</label></td>
-                    <td style="font-size: 18px;">😠</td><td><input type="range" id="conssubben" min="-2" max="2" step="1" value="0" required /></td><td style="font-size: 18px;">😊</td>
+                    <td>
+                        <label for="conssubben">
+                            Consumer Subjective Benefit
+                            <span class="tooltip-help" data-hint="What are the subjective benefits, i.e. how much does the consumer like what they consumed?">?</span>
+                        </label>
+                    </td>
+                    <td style="font-size: 18px;">😠</td><td><input type="range" id="conssubben" min="-1" max="1" step="0.5" value="0" required /></td><td style="font-size: 18px;">😊</td>
                 </tr>
                 <tr>
-                    <td><label for="ccs">Consumer Subj. Tun.</label></td>
+                    <td>
+                        <label for="ccs">
+                            Consumer Subj. Benefit Tun.
+                            <span class="tooltip-help" data-hint="Tuning multiplier for consumer subjective benefit.">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="ccs" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr>
-                    <td><label for="consobjben">Consumer Obj. Benefit</label></td>
+                    <td>
+                        <label for="consobjben">
+                            Consumer Objective Benefit
+                            <span class="tooltip-help" data-hint="What are the (objective) benefits to the consumer when the consumer consumes what the producer is producing?">?</span>
+                        </label>
+                    </td>
                     <td>-100%</td><td><input type="range" id="consobjben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
                 </tr>
                 <tr>
-                    <td><label for="cco">Consumer Obj. Tun.</label></td>
+                    <td>
+                        <label for="cco">
+                            Consumer Obj. Benefit Tun.
+                            <span class="tooltip-help" data-hint="Tuning multiplier for consumer objective benefit.">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="cco" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
-                    <td><label for="envben">Environmental Benefit</label></td>
+                    <td>
+                        <label for="envben">
+                            Environmental Benefit
+                            <span class="tooltip-help" data-hint="What are the environmental impacts of the act?">?</span>
+                        </label>
+                    </td>
                     <td>-100%</td><td><input type="range" id="envben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
                 </tr>
                 <tr>
-                    <td><label for="ceb">Environmental Tun.</label></td>
+                    <td>
+                        <label for="ceb">
+                            Environmental Benefit Tun.
+                            <span class="tooltip-help" data-hint="Tuning multiplier for environmental benefit.">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="ceb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr>
-                    <td><label for="humanben">Human Benefit</label></td>
+                    <td>
+                        <label for="humanben">
+                            Human Benefit
+                            <span class="tooltip-help" data-hint="How resilient does the act/result make humanity? Also, how big of an area does the act benefit?">?</span>
+                        </label>
+                    </td>
                     <td>-100%</td><td><input type="range" id="humanben" min="-1" max="1" step="0.1" value="0" required /></td><td>100%</td>
                 </tr>
                 <tr>
-                    <td><label for="chb">Human Tun.</label></td>
+                    <td>
+                        <label for="chb">
+                            Human Benefit Tun.
+                            <span class="tooltip-help" data-hint="Tuning multiplier for human benefit.">?</span>
+                        </label>
+                    </td>
                     <td>0</td><td><input type="number" id="chb" min="0" step="0.000001" value="1" required /></td><td>&infin;</td>
                 </tr>
                 <tr><td colspan="4"><hr></td></tr>
                 <tr>
-                    <td colspan="4"><input type="submit" value="Submit Class" style="padding: 10px; cursor: pointer; font-weight: bold; width: 100%;"/></td>
+                    <td colspan="2"><a href="Algorithm.pdf" target="_blank" style="color: #0076ff; text-decoration: underline;">Original formula</a> provided by Copiosis</td>
+                    <td colspan="2"><input type="submit" value="Submit Class" style="padding: 8px 16px; cursor: pointer; font-weight: bold;"/></td>
                 </tr>
             </table>
         </div>
@@ -119,11 +252,30 @@
 
 <script src="store.js"></script>
 <script>
-    function showLoading() { document.getElementById('loader-overlay').style.display = 'flex'; }
-    function toggleNav(e) { if (e) e.stopPropagation(); document.getElementById('navMenu').classList.toggle('open'); }
+    function showLoading() {
+        document.getElementById('loader-overlay').style.display = 'flex';
+        document.querySelector('.main-content').style.opacity = '0.3';
+    }
+
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.href && !this.href.startsWith('javascript') && this.target !== '_blank' && !this.href.endsWith('.pdf')) {
+                showLoading();
+            }
+        });
+    });
+
+    function toggleNav(e) { 
+        if (e) e.stopPropagation();
+        document.getElementById('navMenu').classList.toggle('open'); 
+    }
+
     document.addEventListener('click', function(e) {
         const wrapper = document.querySelector('.nav-item-dropdown-wrapper');
-        if (wrapper && !wrapper.contains(e.target)) document.getElementById('navMenu').classList.remove('open');
+        const navMenu = document.getElementById('navMenu');
+        if (wrapper && !wrapper.contains(e.target)) {
+            navMenu.classList.remove('open');
+        }
     });
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -132,7 +284,7 @@
     const fields = ['suggestedGateway', 'resabundance', 'beneficiaries', 'producers', 'ccs', 'conssubben', 'cco', 'consobjben', 'ceb', 'envben', 'chb', 'humanben'];
 
     if (classId) {
-        document.getElementById('form-title').innerText = "Edit A Class";
+        document.getElementById('form-title').innerText = "Edit a class";
         const c = classes.find(item => item.id === classId);
         if (c) {
             document.getElementById('name').value = c.name;
@@ -161,16 +313,14 @@
             const idx = classes.findIndex(c => c.id === classId);
             classes[idx] = classData;
 
-            // --- CASCADING AUTO-UPDATE FOR USER PRODUCTS ---
+            // Cascading auto-update for assigned user products
             let products = DB.get('products') || [];
             let userProducts = DB.get('user_products') || [];
 
-            // Find all products assigned to this class
             const matchingProductIds = products
                 .filter(p => p.class_id === classId)
                 .map(p => p.id);
 
-            // Cascade updated values and recalculate benefits
             userProducts.forEach(up => {
                 if (matchingProductIds.includes(up.ProductID)) {
                     up.gateway = classData.suggestedGateway;
@@ -201,7 +351,7 @@
         alert('Class saved successfully!');
         showLoading();
         window.location.href = 'classes.html';
-    }
+    };
 </script>
 </body>
 </html>
