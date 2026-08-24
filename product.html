@@ -140,9 +140,16 @@
         }
     });
 
-    const users = DB.get('users').filter(u => u.id !== 0);
     const classes = DB.get('classes') || [];
     
+    // Check if any classes exist in the system
+    if (classes.length === 0) {
+        alert("No class found. Please create a class first then proceed to product registration.");
+        showLoading();
+        window.location.href = 'addclass.html';
+    }
+
+    const users = DB.get('users').filter(u => u.id !== 0);
     const userSelect = document.getElementById('user_id');
     const classSelect = document.getElementById('class_id');
     const gatewayInput = document.getElementById('gateway');
@@ -171,13 +178,6 @@
 
         const userId = parseInt(userSelect.value);
         const classId = parseInt(classSelect.value);
-
-        if (!classId) {
-            alert("No class found. Please create a class and assign it to this product.");
-            window.location.href = "addclass.html";
-            return;
-        }
-
         const nameInput = document.getElementById('name').value.trim();
         const descriptionInput = document.getElementById('description').value.trim();
         const itemType = document.querySelector('input[name="item_type"]:checked').value;
