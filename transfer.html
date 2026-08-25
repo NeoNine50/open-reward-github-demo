@@ -21,7 +21,15 @@
         .main-content { max-width: 600px; margin: 90px auto 0 auto; padding: 16px; transition: opacity 0.3s ease; }
         .form-grid { display: flex; flex-direction: column; gap: 14px; max-width: 450px; margin: 0 auto; background: #fff; padding: 20px; border: 1px solid #ccc; border-radius: 6px; text-align: left; }
         .field { display: flex; flex-direction: column; gap: 4px; }
-        select, input { padding: 8px 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; width: 100%; }
+        label { font-size: 14px; color: #222; }
+        select, input[type="number"], textarea { padding: 8px 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; width: 100%; }
+        textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+
+        /* Rating Landscape Layout */
+        .rating-container { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 10px 14px; border: 1px solid #ddd; border-radius: 4px; }
+        .rating-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+        .rating-item input[type="radio"] { cursor: pointer; margin: 0; width: auto; }
+        .rating-item label { font-size: 20px; cursor: pointer; font-weight: normal; }
 
         /* Loader Overlay */
         #loader-overlay {
@@ -80,9 +88,21 @@
             <label for="amount">Quantity:</label>
             <input type="number" id="amount" value="1" min="1" required/>
         </div>
+
+        <div class="field">
+            <label>Consumer Satisfaction Rating:</label>
+            <div class="rating-container">
+                <div class="rating-item"><input type="radio" name="rating_val" id="r1" value="-1.0" required><label for="r1">😠</label></div>
+                <div class="rating-item"><input type="radio" name="rating_val" id="r2" value="-0.5"><label for="r2">🙁</label></div>
+                <div class="rating-item"><input type="radio" name="rating_val" id="r3" value="0.0" checked><label for="r3">😐</label></div>
+                <div class="rating-item"><input type="radio" name="rating_val" id="r4" value="0.5"><label for="r4">🙂</label></div>
+                <div class="rating-item"><input type="radio" name="rating_val" id="r5" value="1.0"><label for="r5">❤️</label></div>
+            </div>
+        </div>
+
         <div class="field">
             <label for="comment">Comment:</label>
-            <input type="text" id="comment"/>
+            <textarea id="comment" placeholder="Provide any additional notes..."></textarea>
         </div>
         <input type="submit" value="Create transaction" style="cursor: pointer; font-weight: bold; padding: 10px;"/>
     </form>
@@ -136,7 +156,7 @@
         const consumerId = parseInt(consumerSelect.value);
         const productId = parseInt(productSelect.value);
         const amount = parseFloat(document.getElementById('amount').value);
-        const comment = document.getElementById('comment').value;
+        const comment = document.getElementById('comment').value.trim();
 
         if (producerId === consumerId) return alert("Consumer and producer must not be the same.");
 
@@ -147,6 +167,30 @@
         if (consumerId !== 0 && (consumer.nbr - (up.gateway * amount) < 0)) {
             return alert("Consumer has insufficient NBR.");
         }
+
+        // Fetch selected satisfaction rating
+        const ratingVal = parseFloat(document.querySelector('input[name="rating_val"]:checked').value);
+
+        // Update consumer subjective benefit in user product configuration
+        up.conssubben = ratingVal;
+
+        // Recalculate Benefit with updated rating
+        const resabundance = up.resabundance ?? 1;
+        const beneficiaries = up.beneficiaries ?? 1;
+        const producers = up.producers ?? 1;
+        const ccs = up.ccs ?? 1;
+        const cco = up.cco ?? 1;
+        const consobjben = up.consobjben ?? 0;
+        const ceb = up.ceb ?? 1;
+        const envben = up.envben ?? 0;
+        const chb = up.chb ?? 1;
+        const humanben = up.humanben ?? 0;
+
+        const rawBenefit = resabundance * Math.log(1.0 + (beneficiaries / producers)) * ((ccs * up.conssubben) + (cco * consobjben) + (ceb * envben) + (chb * humanben));
+        up.benefit = Math.max(0, Math.ceil(rawBenefit));
+
+        // Save updated user_products back to LocalStorage
+        DB.set('user_products', userProducts);
 
         const awardedNBR = up.benefit * amount;
         const removedNBR = consumerId !== 0 ? up.gateway * amount : 0;
